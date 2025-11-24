@@ -10,7 +10,23 @@ from django.shortcuts import render, redirect
 
 # Create your views here.
 def home(request):
-    return render(request, 'home.html')
+    if request.user.is_anonymous == False:
+        empresa = Empresa.objects.get(usuario_id= request.user.id)
+        vacantes = Vacante.objects.filter(empresa_id = empresa.id)
+        vacantes_activas = vacantes.filter(activa=True)
+        context = {
+            'vacantes': vacantes,
+            'vacantes_a': vacantes_activas,
+            'empresa' : empresa
+        }
+
+        print(request.user.id)
+        print(vacantes)
+        return render(request, 'home.html', context)
+    else:
+        print('Debes iniciar sesion primero')
+        messages.error(request, 'Debes iniciar sesión primero para ver tus vacantes.')
+        return redirect('signin')
 
 def SignUp(request):
     # Contexto base (se usa tanto en GET como en POST si falla)
@@ -102,6 +118,16 @@ def SignIn(request):
     # Si es GET o falló el login, mostramos la página
     return render(request, 'signin.html')
 
+def historial_vacantes(request):
+    return render(request, 'historial.html')
+
+
+
+def logout_usuario(request):
+    logout(request)
+    messages.info(request, 'Has cerrado sesión exitosamente.')
+    return redirect('signin')
+
 def agregar_vacante(request):
     return render(request, 'agregar-vacante.html')
 
@@ -110,11 +136,3 @@ def detalle_vacante(request, id):
 
 def editar_vacante(request, vacante_id):
    return render(request, 'editar-vacante.html', {'vacante_id': vacante_id})
-
-def historial_vacantes(request):
-    return render(request, 'historial.html')
-
-def logout_usuario(request):
-    logout(request)
-    messages.info(request, 'Has cerrado sesión exitosamente.')
-    return redirect('signin')

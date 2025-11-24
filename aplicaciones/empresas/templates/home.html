@@ -1,14 +1,262 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Document</title>
-</head>
-<body>
-    <h1>Welcome to the Home Page</h1>
-    <p>This is a sample home page for the empresas application.</p>
+{% extends 'marco.html' %}
 
-    <a href="{% url 'logout' %}">Logout</a>
-</body>
-</html>
+{% block content %}
+<style>
+    /* Estilos generales (ligeramente ajustados) */
+    body {
+        background-color: #f8f9fa;
+        font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+        color: #343a40;
+    }
+
+    .main-container {
+        max-width: 1200px;
+        margin: 2rem auto;
+        padding: 0 1rem;
+    }
+
+    /* --- NUEVOS ESTILOS --- */
+    /* Bienvenida y Resumen */
+    .header-section {
+        background-color: #ffffff;
+        padding: 2rem;
+        border-radius: 12px;
+        box-shadow: 0 4px 20px rgba(0, 0, 0, 0.07);
+        margin-bottom: 2.5rem;
+    }
+
+    .welcome-message h1 {
+        margin: 0;
+        font-size: 2em;
+        color: #2a3b4c;
+    }
+
+    .welcome-message p {
+        margin-top: 0.5rem;
+        font-size: 1.1em;
+        color: #6c757d;
+    }
+
+    .dashboard-stats {
+        display: flex;
+        gap: 1.5rem;
+        margin-top: 1.5rem;
+        flex-wrap: wrap;
+    }
+
+    .stat-box {
+        flex: 1;
+        background-color: #f8f9fa;
+        padding: 1.5rem;
+        border-radius: 8px;
+        border: 1px solid #e9ecef;
+        text-align: center;
+    }
+    
+    .stat-box .number {
+        font-size: 2.5em;
+        font-weight: 700;
+        color: #007bff;
+    }
+    
+    .stat-box .label {
+        font-size: 1em;
+        color: #6c757d;
+    }
+    
+    /* --- ESTILOS EXISTENTES (AJUSTADOS) --- */
+    /* Título de la sección de vacantes */
+    .vacantes-title {
+        color: #2a3b4c;
+        margin-bottom: 2rem;
+        padding-bottom: 0.5rem;
+        border-bottom: 2px solid #e9ecef;
+    }
+    
+    /* Contenedor de las tarjetas de vacantes (Grid Responsivo) */
+    .vacantes-container {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+        gap: 1.5rem;
+    }
+    
+    .vacante-card {
+        /* Mismos estilos de antes */
+        background-color: #ffffff;
+        border-radius: 10px;
+        box-shadow: 0 4px 15px rgba(0, 0, 0, 0.08);
+        padding: 1.5rem;
+        display: flex;
+        flex-direction: column;
+        justify-content: space-between;
+        transition: transform 0.2s ease, box-shadow 0.2s ease;
+    }
+    
+    .vacante-card:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 8px 25px rgba(0, 0, 0, 0.12);
+    }
+    .card-title {
+        font-size: 1.4em;
+        color: #333;
+        margin: 0 0 0.5rem 0;
+    }
+
+    .card-salario {
+        font-size: 1.1em;
+        color: #007bff;
+        font-weight: bold;
+        margin-bottom: 1.5rem;
+    }
+
+    .card-actions {
+        display: flex;
+        gap: 0.5rem;
+        flex-wrap: wrap; /* Para que los botones se ajusten en pantallas pequeñas */
+        margin-top: auto; /* Empuja los botones al final de la tarjeta */
+    }
+
+    .btn {
+        display: inline-block;
+        padding: 0.5rem 1rem;
+        border-radius: 5px;
+        text-decoration: none;
+        color: white;
+        text-align: center;
+        font-weight: 500;
+        transition: background-color 0.2s ease;
+    }
+
+    .btn-detalle { background-color: #007bff; }
+    .btn-detalle:hover { background-color: #0056b3; }
+
+    .btn-editar { background-color: #28a745; }
+    .btn-editar:hover { background-color: #218838; }
+
+    .btn-desactivar { background-color: #dc3545; }
+    .btn-desactivar:hover { background-color: #c82333; }
+    
+    /* Sección de "no hay vacantes" */
+    .empty-state {
+        background-color: #ffffff;
+        padding: 3rem;
+        text-align: center;
+        border-radius: 12px;
+        border: 2px dashed #dee2e6;
+    }
+
+    .empty-state h2 {
+        color: #495057;
+    }
+    
+    /* --- NUEVOS ESTILOS (CONTENIDO ADICIONAL) --- */
+    /* Sección de Ayuda y Consejos */
+    .aux-content {
+        margin-top: 4rem;
+        background-color: #ffffff;
+        padding: 2rem;
+        border-radius: 12px;
+        box-shadow: 0 4px 20px rgba(0, 0, 0, 0.07);
+    }
+    .aux-content h3 {
+        color: #2a3b4c;
+        margin-bottom: 1.5rem;
+    }
+    .tips-list {
+        list-style: none;
+        padding: 0;
+    }
+    .tips-list li {
+        display: flex;
+        align-items: flex-start;
+        margin-bottom: 1rem;
+        color: #495057;
+    }
+    .tips-list li::before {
+        content: '💡';
+        margin-right: 0.75rem;
+        font-size: 1.5em;
+        line-height: 1.2;
+    }
+    
+    /* Botón principal para agregar nueva vacante */
+    .btn-agregar {
+        display: block;
+        width: fit-content;
+        margin: 3rem auto 2rem auto;
+        padding: 0.8rem 2.5rem;
+        background-color: #17a2b8;
+        font-size: 1.1em;
+        text-decoration: none;
+        color: white;
+        border-radius: 50px;
+        box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+        transition: all 0.3s ease;
+    }
+    .btn-agregar:hover {
+        background-color: #138496;
+        transform: translateY(-3px);
+    }
+
+</style>
+
+<div class="main-container">
+
+    <section class="header-section">
+        <div class="welcome-message">
+            <h1>Bienvenido de nuevo, {{empresa.nombre}} </h1>
+            <p>Gestiona tus vacantes activas y encuentra al candidato ideal.</p>
+        </div>
+        <div class="dashboard-stats">
+            <div class="stat-box">
+                <div class="number">{{ vacantes_a.count }}</div>
+                <div class="label">Vacantes Activas</div>
+            </div>
+            <div class="stat-box">
+                <div class="number">12</div> <div class="label">Candidatos Nuevos</div>
+            </div>
+            <div class="stat-box">
+                <div class="number">4</div> <div class="label">Mensajes sin Leer</div>
+            </div>
+        </div>
+    </section>
+
+    <h2 class="vacantes-title">Tus Ofertas de Empleo</h2>
+
+    {% if vacantes_a %}
+        <div class="vacantes-container">
+            {% for vacante in vacantes_a %}
+            <div class="vacante-card">
+                <div>
+                    <h3 class="card-title">{{ vacante.nombre_puesto }}</h3>
+                    <div class="card-salario"> Postulaciones: {{vacante.postulaciones_count}} </div>
+                </div>
+                <div class="card-actions">
+                    <a href="/empresas/detalle-vacante/{{vacante.id}}" class="btn btn-detalle">Detalle</a>
+                    <a href="/empresas/editar-vacante/{{vacante.id}}" class="btn btn-editar">Editar</a>
+                    <a href="#" class="btn btn-desactivar">Desactivar</a>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+    {% else %}
+        <div class="empty-state">
+            <h2>Aún no tienes vacantes activas</h2>
+            <p>¡No esperes más! Publica tu primera oferta y llega a miles de profesionales.</p>
+        </div>
+    {% endif %}
+
+    <a href="/empresas/agregar-vacante/" class="btn-agregar">Agrega una Nueva Vacante</a>
+
+    <section class="aux-content">
+        <h3>Consejos para una Vacante Atractiva</h3>
+        <ul class="tips-list">
+            <li><strong>Sé claro y conciso:</strong> Describe las responsabilidades del día a día sin rodeos. Un candidato debe entender el rol en menos de un minuto.</li>
+            <li><strong>Menciona la cultura de tu empresa:</strong> ¿Qué hace especial a tu lugar de trabajo? Habla de los valores, el ambiente y los beneficios no monetarios.</li>
+            <li><strong>Define un rango salarial competitivo:</strong> Las vacantes con salarios transparentes reciben hasta un 50% más de postulaciones de calidad.</li>
+        </ul>
+    </section>
+
+</div>
+
+{% endblock %}

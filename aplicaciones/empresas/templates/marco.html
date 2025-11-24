@@ -1,0 +1,122 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Barra de Navegación para Empresas</title>
+    <style>
+        /* Estilos generales del cuerpo para el ejemplo */
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            background-color: #f4f4f4;
+        }
+
+        /* Contenedor de la barra de navegación */
+        .navbar {
+            display: flex;
+            justify-content: space-between; /* Alinea los elementos a los extremos */
+            align-items: center; /* Centra verticalmente los elementos */
+            background-color: #ffffff;
+            padding: 15px 30px;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.08);
+            width: 100%;
+            box-sizing: border-box; /* Asegura que el padding no afecte el ancho total */
+        }
+
+        /* Estilo del logo o nombre del sitio */
+        .navbar-brand {
+            font-size: 1.5em;
+            font-weight: bold;
+            color: #007bff;
+            text-decoration: none;
+        }
+
+        /* Lista de enlaces de navegación */
+        .navbar-links {
+            list-style: none; /* Quita los puntos de la lista */
+            display: flex;
+            margin: 0;
+            padding: 0;
+            gap: 25px; /* Espacio entre los enlaces */
+        }
+
+        /* Estilo de cada enlace */
+        .navbar-links a {
+            text-decoration: none;
+            color: #333;
+            font-size: 1em;
+            font-weight: 500;
+            padding-bottom: 5px;
+            position: relative;
+            transition: color 0.3s;
+        }
+        
+        /* Efecto hover con línea inferior */
+        .navbar-links a::after {
+            content: '';
+            position: absolute;
+            width: 0;
+            height: 2px;
+            bottom: 0;
+            left: 0;
+            background-color: #007bff;
+            transition: width 0.3s ease-in-out;
+        }
+        
+        .navbar-links a:hover {
+            color: #007bff;
+        }
+        
+        .navbar-links a:hover::after {
+            width: 100%;
+        }
+
+        /* Botón de acción (Cerrar Sesión) */
+        .nav-button a {
+            background-color: #e74c3c;
+            color: white;
+            padding: 10px 20px;
+            border-radius: 5px;
+            text-decoration: none;
+            font-weight: bold;
+            transition: background-color 0.3s;
+        }
+
+        .nav-button a:hover {
+            background-color: #c0392b;
+        }
+
+    </style>
+</head>
+<body>
+
+    <nav class="navbar">
+        <a href="/" class="navbar-brand"> Tu Primera Chamba</a>
+
+        <ul class="navbar-links">
+            <li><a href="/empresas"> Mis Vacantes </a></li>
+            <li><a href="#"> Perfil </a></li>
+            <li><a href="/empresas/historial-vacantes"> Historial de Vacantes </a></li>
+        </ul>
+
+        <div class="nav-button">
+            <a href="/empresas/logout">Cerrar Sesión</a>
+        </div>
+    </nav>
+
+    
+
+    <div style="padding: 40px; text-align: center;">
+        
+        {% block content %}
+
+         {% endblock %}
+
+    </div>
+
+
+
+</body>
+</html>
+

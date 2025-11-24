@@ -30,6 +30,8 @@ class Vacante(models.Model):
     etiquetas = models.TextField(null=True, blank=True)
     fecha_publicacion = models.DateField(auto_now_add=True)
     empresa = models.ForeignKey(Empresa, on_delete=models.CASCADE, null=True)
+    activa = models.BooleanField(default=True)
+    postulaciones_count = models.IntegerField(default=0)
 
     def __str__(self):
         return self.nombre_puesto
