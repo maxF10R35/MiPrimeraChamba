@@ -1,5 +1,6 @@
 from django.db import models
 from django.contrib.auth.models import User
+from aplicaciones.trabajadores.models import Trabajador
 
 # Create your models here.
 class Empresa(models.Model):
@@ -34,3 +35,16 @@ class Vacante(models.Model):
         return self.nombre_puesto
 
 
+class Postulacion(models.Model):
+    
+    vacante = models.ForeignKey(Vacante, on_delete=models.CASCADE)
+    trabajador = models.ForeignKey(Trabajador, on_delete=models.CASCADE)
+    fecha_postulacion = models.DateField(null=False, auto_now_add=True)
+    estado = models.CharField(max_length=50, null=False, blank=False, default='En revisión')
+    D_A_fit = models.DecimalField(max_digits=5, decimal_places=2, null=True, blank=True)
+    N_S_fit = models.DecimalField(max_digits=5, decimal_places=2, null=True, blank=True)
+    P_O_fit = models.DecimalField(max_digits=5, decimal_places=2, null=True, blank=True)
+    compatibilidad = models.DecimalField(max_digits=5, decimal_places=2, null=True, blank=True)
+
+    def __str__(self):
+        return f"{self.trabajador} - {self.vacante}"
