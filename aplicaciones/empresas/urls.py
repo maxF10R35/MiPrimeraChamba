@@ -9,4 +9,5 @@ urlpatterns = [
     path('detalle-vacante/<int:id>', views.detalle_vacante, name='detail'),
     path('editar-vacante/<int:vacante_id>', views.editar_vacante, name='edit'),
     path('historial-vacantes/', views.historial_vacantes, name='history'),
+    path('logout/', views.logout_usuario, name='logout'),
 ]

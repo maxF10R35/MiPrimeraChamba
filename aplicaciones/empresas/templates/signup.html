@@ -1,11 +1,426 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="es">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Document</title>
+    <title>Registro de Empresa | Tu Primera Chamba</title>
+    
+    <!-- Bootstrap 5 CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Iconos (Bootstrap Icons) -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css">
+    
+    <style>
+        body {
+            background-color: #f8f9fa;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+        .brand-color {
+            color: #0d6efd;
+        }
+        .form-section-title {
+            font-size: 1.1rem;
+            font-weight: 600;
+            color: #495057;
+            border-bottom: 2px solid #e9ecef;
+            padding-bottom: 10px;
+            margin-bottom: 20px;
+            margin-top: 10px;
+        }
+        .card-register {
+            border: none;
+            border-radius: 15px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.08);
+        }
+        .btn-register {
+            padding: 12px 30px;
+            font-weight: 600;
+            border-radius: 8px;
+        }
+        .required-asterisk {
+            color: #dc3545;
+        }
+        
+        /* Estilos para las Etiquetas (Tags) */
+        .tag-btn {
+            border-radius: 50px;
+            padding: 8px 16px;
+            font-size: 0.9rem;
+            transition: all 0.2s ease;
+            border: 1px solid #dee2e6;
+            background-color: #fff;
+            color: #495057;
+            margin-bottom: 8px;
+            margin-right: 5px;
+            cursor: pointer;
+            user-select: none;
+        }
+        
+        .tag-btn:hover {
+            background-color: #e9ecef;
+            border-color: #ced4da;
+        }
+
+        .tag-btn.active-tag {
+            background-color: #0d6efd;
+            color: white;
+            border-color: #0d6efd;
+            box-shadow: 0 2px 5px rgba(13, 110, 253, 0.3);
+        }
+
+        .tag-description {
+            font-size: 0.85rem;
+            color: #6c757d;
+            margin-top: 5px;
+            min-height: 20px;
+            font-style: italic;
+        }
+
+        /* Estilos validación password */
+        .password-requirements {
+            font-size: 0.85rem;
+            color: #6c757d;
+            margin-top: 10px;
+            background: #f8f9fa;
+            padding: 10px;
+            border-radius: 8px;
+        }
+        .req-item {
+            margin-bottom: 2px;
+            display: flex;
+            align-items: center;
+        }
+        .req-item i {
+            margin-right: 8px;
+            font-size: 1rem;
+        }
+        .valid-req {
+            color: #198754; /* Verde Bootstrap */
+        }
+        .invalid-req {
+            color: #dc3545; /* Rojo Bootstrap */
+        }
+    </style>
 </head>
 <body>
-    <h1> Registro para Nuevas empresas</h1>
+
+    <!-- Navbar Simple -->
+    <nav class="navbar navbar-light bg-white shadow-sm mb-5">
+        <div class="container">
+            <a class="navbar-brand fw-bold fs-4" href="#">
+                <span class="brand-color"><i class="bi bi-briefcase-fill me-2"></i>Tu Primera Chamba</span>
+            </a>
+            <span class="navbar-text">Registro de Empresas</span>
+        </div>
+    </nav>
+
+    <div class="container mb-5">
+        <!-- BLOQUE DE MENSAJES BACKEND -->
+        {% if messages %}
+        <div class="row justify-content-center mb-3">
+            <div class="col-lg-8">
+                {% for message in messages %}
+                    <div class="alert alert-{% if message.tags == 'error' %}danger{% else %}{{ message.tags }}{% endif %} alert-dismissible fade show shadow-sm" role="alert">
+                        {% if message.tags == 'error' %}<i class="bi bi-exclamation-triangle-fill me-2"></i>{% endif %}
+                        {% if message.tags == 'success' %}<i class="bi bi-check-circle-fill me-2"></i>{% endif %}
+                        {{ message }}
+                        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                    </div>
+                {% endfor %}
+            </div>
+        </div>
+        {% endif %}
+
+        <div class="row justify-content-center">
+            <div class="col-lg-8">
+                <div class="card card-register p-4 p-md-5">
+                    <div class="text-center mb-4">
+                        <h2 class="fw-bold">Crea tu cuenta de Empresa</h2>
+                        <p class="text-muted">Únete a la red de reclutamiento más grande de la CDMX</p>
+                    </div>
+
+                    <!-- Inicio del Formulario -->
+                    <form action="" method="POST" id="registroForm" novalidate>
+                        {% csrf_token %}
+                        
+                        <!-- Sección 1: Datos de Acceso -->
+                        <div class="form-section-title">
+                            <i class="bi bi-shield-lock me-2"></i>Datos de Acceso
+                        </div>
+                        
+                        <div class="mb-3">
+                            <label for="username" class="form-label">Nombre de Usuario <span class="required-asterisk">*</span></label>
+                            <input type="text" class="form-control" id="username" name="username" placeholder="Ej. empresa_mx" required>
+                        </div>
+
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label for="password" class="form-label">Contraseña <span class="required-asterisk">*</span></label>
+                                <input type="password" class="form-control" id="password" name="password" required>
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label for="confirm_password" class="form-label">Confirmar Contraseña <span class="required-asterisk">*</span></label>
+                                <input type="password" class="form-control" id="confirm_password" name="confirm_password" disabled required>
+                                <div id="matchError" class="form-text text-danger d-none fw-bold">Las contraseñas no coinciden.</div>
+                            </div>
+                        </div>
+
+                        <!-- Lista de Requisitos de Contraseña -->
+                        <div class="password-requirements mb-4">
+                            <small class="d-block mb-2 fw-bold text-uppercase" style="font-size: 0.75rem;">Requisitos de seguridad:</small>
+                            <div class="req-item" id="req-length">
+                                <i class="bi bi-x-circle"></i> Mínimo 8 caracteres
+                            </div>
+                            <div class="req-item" id="req-number">
+                                <i class="bi bi-x-circle"></i> Al menos un número
+                            </div>
+                            <div class="req-item" id="req-uppercase">
+                                <i class="bi bi-x-circle"></i> Al menos una mayúscula
+                            </div>
+                            <div class="req-item" id="req-special">
+                                <i class="bi bi-x-circle"></i> Un carácter especial (@$!%*?&)
+                            </div>
+                        </div>
+
+                        <!-- Sección 2: Información de la Empresa -->
+                        <div class="form-section-title mt-4">
+                            <i class="bi bi-building me-2"></i>Información de la Empresa
+                        </div>
+
+                        <div class="mb-3">
+                            <label for="nombre" class="form-label">Nombre Comercial <span class="required-asterisk">*</span></label>
+                            <input type="text" class="form-control" id="nombre" name="nombre" placeholder="Ej. Soluciones Tecnológicas S.A. de C.V." required>
+                        </div>
+
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label for="email" class="form-label">Correo Corporativo <span class="required-asterisk">*</span></label>
+                                <input type="email" class="form-control" id="email" name="email" placeholder="contacto@empresa.com" required>
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label for="telefono" class="form-label">Teléfono <span class="required-asterisk">*</span></label>
+                                <input type="tel" class="form-control" id="telefono" name="telefono" placeholder="55 1234 5678" required>
+                            </div>
+                        </div>
+
+                        <div class="mb-3">
+                            <label for="direccion" class="form-label">Dirección <span class="required-asterisk">*</span></label>
+                            <input type="text" class="form-control" id="direccion" name="direccion" placeholder="Calle, Número, Colonia, Alcaldía" required>
+                        </div>
+
+                        <div class="mb-3">
+                            <label for="biografia" class="form-label">Biografía / Descripción <span class="required-asterisk">*</span></label>
+                            <textarea class="form-control" id="biografia" name="biografia" rows="3" placeholder="Cuéntanos brevemente a qué se dedica tu empresa..." required></textarea>
+                        </div>
+
+                        <!-- Sección 3: Categoría -->
+                        <div class="form-section-title mt-4">
+                            <i class="bi bi-tags me-2"></i>Sectores Industriales
+                        </div>
+
+                        <div class="mb-3">
+                            <label class="form-label d-block">Selecciona los sectores <span class="required-asterisk">*</span></label>
+                            <small class="text-muted d-block mb-3">Puedes seleccionar más de una opción.</small>
+                            
+                            <div id="tagsContainer" class="d-flex flex-wrap"></div>
+                            
+                            <div class="tag-description mt-2" id="tagHelpText">
+                                Pasa el mouse sobre una etiqueta para ver detalles.
+                            </div>
+
+                            <input type="hidden" name="categoria" id="categoria_input" required>
+                            <div class="invalid-feedback d-block" id="tagsError" style="display:none !important;">
+                                Por favor selecciona al menos un sector.
+                            </div>
+                        </div>
+
+                        <!-- Botón de Envío (DESHABILITADO POR DEFECTO) -->
+                        <div class="d-grid gap-2 mt-5">
+                            <button type="submit" class="btn btn-primary btn-register shadow-sm" id="submitBtn" disabled>
+                                Registrar Empresa <i class="bi bi-lock-fill ms-2" id="btnIcon"></i>
+                            </button>
+                        </div>
+
+                        <div class="text-center mt-3">
+                            <small class="text-muted">¿Ya tienes cuenta? <a href="{% url 'signin' %}" class="text-decoration-none">Inicia Sesión</a></small>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+
+    <script>
+        // --- LÓGICA DE ETIQUETAS ---
+        
+        // NOTA PARA PRODUCCIÓN (DJANGO):
+        // Cuando integres esto en tu servidor, comenta la variable 'SECTOR_INDUSTRIA' de abajo
+        // y descomenta la siguiente línea para recibir los datos desde la vista:
+        // const SECTOR_INDUSTRIA = JSON.parse('{{ sectores_json|escapejs }}');
+
+        // DATOS ESTÁTICOS (Para que funcione la vista previa ahora mismo):
+        const SECTOR_INDUSTRIA = {
+            '11': { 'nombre': 'Tecnología y TI', 'descripcion': 'Empresas de software, desarrollo web, análisis de datos, ciberseguridad.' },
+            '12': { 'nombre': 'Salud y Medicina', 'descripcion': 'Hospitales, farmacéuticas, clínicas, investigación médica.' },
+            '13': { 'nombre': 'Finanzas y Banca', 'descripcion': 'Bancos, seguros, inversión, contabilidad, análisis financiero.' },
+            '14': { 'nombre': 'Marketing y Publicidad', 'descripcion': 'Agencias, marketing digital, RRPP, medios.' },
+            '15': { 'nombre': 'Ingeniería y Manufactura', 'descripcion': 'Producción, calidad, diseño industrial, automoción, construcción.' },
+            '16': { 'nombre': 'Comercio y Retail', 'descripcion': 'Tiendas, e-commerce, ventas, inventario.' },
+            '17': { 'nombre': 'Educación', 'descripcion': 'Escuelas, universidades, formación online.' },
+            '18': { 'nombre': 'Servicios al Cliente', 'descripcion': 'Call centers, soporte técnico, atención al usuario.' },
+            '19': { 'nombre': 'Recursos Humanos', 'descripcion': 'Reclutamiento, nóminas, capacitación.' },
+            '110': { 'nombre': 'Arte y Diseño', 'descripcion': 'Diseño gráfico, ilustración, moda, arquitectura.' },
+            '111': { 'nombre': 'Administración y Oficina', 'descripcion': 'Asistente, secretaria, gestión documental.' }
+        };
+        
+        const container = document.getElementById('tagsContainer');
+        const hiddenInput = document.getElementById('categoria_input');
+        const helpText = document.getElementById('tagHelpText');
+        const tagsError = document.getElementById('tagsError');
+        const selectedTags = new Set();
+
+        for (const [id, data] of Object.entries(SECTOR_INDUSTRIA)) {
+            const btn = document.createElement('button');
+            btn.type = 'button';
+            btn.className = 'tag-btn';
+            btn.textContent = data.nombre;
+            btn.dataset.id = id;
+            
+            btn.addEventListener('click', function() {
+                const tagId = this.dataset.id;
+                if (selectedTags.has(tagId)) {
+                    selectedTags.delete(tagId);
+                    this.classList.remove('active-tag');
+                } else {
+                    selectedTags.add(tagId);
+                    this.classList.add('active-tag');
+                }
+                hiddenInput.value = Array.from(selectedTags).join(',');
+                if (selectedTags.size > 0) tagsError.style.display = 'none';
+                validateAll(); // Revalidar todo al cambiar tags
+            });
+
+            btn.addEventListener('mouseenter', function() {
+                helpText.textContent = data.descripcion;
+                helpText.style.color = '#0d6efd';
+            });
+            btn.addEventListener('mouseleave', function() {
+                helpText.textContent = 'Pasa el mouse sobre una etiqueta para ver detalles.';
+                helpText.style.color = '#6c757d';
+            });
+
+            container.appendChild(btn);
+        }
+
+        // --- LÓGICA DE SEGURIDAD (PASSWORD) ---
+        const pass1 = document.getElementById('password');
+        const pass2 = document.getElementById('confirm_password');
+        const matchError = document.getElementById('matchError');
+        const submitBtn = document.getElementById('submitBtn');
+        const btnIcon = document.getElementById('btnIcon');
+
+        // Referencias a los requisitos
+        const reqs = {
+            length: document.getElementById('req-length'),
+            number: document.getElementById('req-number'),
+            uppercase: document.getElementById('req-uppercase'),
+            special: document.getElementById('req-special')
+        };
+
+        // Expresiones Regulares
+        const regexList = {
+            length: /.{8,}/,
+            number: /\d/,
+            uppercase: /[A-Z]/,
+            special: /[@$!%*?&]/
+        };
+
+        function updateRequirement(element, isValid) {
+            const icon = element.querySelector('i');
+            if (isValid) {
+                element.classList.remove('invalid-req');
+                element.classList.add('valid-req');
+                icon.className = 'bi bi-check-circle-fill';
+            } else {
+                element.classList.remove('valid-req');
+                element.classList.add('invalid-req');
+                icon.className = 'bi bi-x-circle';
+            }
+        }
+
+        function validateAll() {
+            const p1 = pass1.value;
+            const p2 = pass2.value;
+
+            // 1. Validar Complejidad
+            const isLength = regexList.length.test(p1);
+            const isNumber = regexList.number.test(p1);
+            const isUpper = regexList.uppercase.test(p1);
+            const isSpecial = regexList.special.test(p1);
+
+            updateRequirement(reqs.length, isLength);
+            updateRequirement(reqs.number, isNumber);
+            updateRequirement(reqs.uppercase, isUpper);
+            updateRequirement(reqs.special, isSpecial);
+
+            const isComplex = isLength && isNumber && isUpper && isSpecial;
+
+            // 2. Habilitar/Deshabilitar Confirmación
+            if (isComplex) {
+                pass2.disabled = false;
+            } else {
+                pass2.disabled = true;
+                pass2.value = ''; // Limpiar si la principal ya no es válida
+            }
+
+            // 3. Validar Coincidencia
+            let isMatch = false;
+            if (p2.length > 0) {
+                if (p1 === p2) {
+                    isMatch = true;
+                    matchError.classList.add('d-none');
+                    pass2.classList.remove('is-invalid');
+                    pass2.classList.add('is-valid');
+                } else {
+                    matchError.classList.remove('d-none');
+                    pass2.classList.add('is-invalid');
+                }
+            } else {
+                matchError.classList.add('d-none');
+                pass2.classList.remove('is-invalid');
+                pass2.classList.remove('is-valid');
+            }
+
+            // 4. Validar Tags
+            const hasTags = selectedTags.size > 0;
+
+            // 5. DECISIÓN FINAL: ¿Habilitar Botón?
+            if (isComplex && isMatch && hasTags) {
+                submitBtn.disabled = false;
+                btnIcon.className = 'bi bi-arrow-right ms-2';
+            } else {
+                submitBtn.disabled = true;
+                btnIcon.className = 'bi bi-lock-fill ms-2';
+            }
+        }
+
+        // Listeners
+        pass1.addEventListener('input', validateAll);
+        pass2.addEventListener('input', validateAll);
+
+        // Prevenir envío si hackean el botón disabled en HTML
+        document.getElementById('registroForm').addEventListener('submit', function(e) {
+            if (submitBtn.disabled) {
+                e.preventDefault();
+            }
+            if (selectedTags.size === 0) {
+                e.preventDefault();
+                tagsError.style.display = 'block';
+            }
+        });
+
+    </script>
 </body>
 </html>
