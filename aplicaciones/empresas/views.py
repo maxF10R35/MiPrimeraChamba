@@ -59,7 +59,7 @@ def SignUp(request):
                                              categoria=categoria, email=email)
             messages.success(request, '¡Cuenta creada exitosamente! Por favor inicia sesión.')
             print(f"Empresa {nombre} creado con éxito.")
-            return redirect('signin') # O a donde quieras mandarlo
+            return redirect('login') # O a donde quieras mandarlo
         except Exception as e:
             messages.error(request, 'Ocurrió un error inesperado al guardar.')
             print(f"Error: {e}")
