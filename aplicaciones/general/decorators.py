@@ -14,7 +14,7 @@ def empresa_required(view_func):
         else:
             # 3. Si es Trabajador (o admin sin perfil empresa), fuera de aquí
             messages.warning(request, "Esta sección es solo para reclutadores.")
-            return redirect('home_trabajador') # Redirigir a SU zona
+            return redirect('home_t') # Redirigir a SU zona
             
     return wrapper_func
 

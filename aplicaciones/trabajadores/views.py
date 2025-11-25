@@ -1,10 +1,13 @@
 from django.shortcuts import render
 from django.http import HttpResponse
 import json
+from django.contrib.auth.decorators import login_required
+from aplicaciones.general.decorators import trabajador_required
 from django.shortcuts import render, redirect
 from django.contrib import messages
 from django.contrib.auth.models import User
 from .models import Trabajador
+from aplicaciones.empresas.models import Vacante
 # Importamos todos tus diccionarios
 from aplicaciones.etiquetas import SINCO, VACANTE_TAGS, GENERO_OPCIONES, NIVEL_ESTUDIOS, TIEMPO_EXPERIENCIA
 
@@ -91,8 +94,49 @@ def get_context_trabajador():
         'tags_soft_json': json.dumps(VACANTE_TAGS['3']['etiquetas']),      # Soft Skills
     }
 
-def home_trabajador(request):#vista para explorar trabajos
-    return render(request, 'home_t.html')
+
+
+
+
+@login_required
+@trabajador_required
+def home_trabajador(request):
+    # 1. Obtener todas las vacantes activas, ordenadas por las más recientes
+    # Usamos select_related para traer los datos de la empresa en la misma consulta (eficiencia)
+    vacantes = Vacante.objects.filter(activa=True).select_related('empresa').order_by('-fecha_publicacion')
+
+    # 2. Procesamiento de datos para la vista (Tags y Logos)
+    # Como no podemos modificar el objeto guardado en BD, modificamos la instancia en memoria
+    for vacante in vacantes:
+        # A. Procesar Etiquetas (IDs -> Nombres)
+        lista_tags = []
+        if vacante.etiquetas:
+            ids = vacante.etiquetas.split(',')
+            # Buscamos en todas las categorías de VACANTE_TAGS
+            for tag_id in ids:
+                found = False
+                for cat_key, cat_val in VACANTE_TAGS.items():
+                    if tag_id in cat_val['etiquetas']:
+                        lista_tags.append(cat_val['etiquetas'][tag_id]['nombre'])
+                        found = True
+                        break
+                if len(lista_tags) >= 3: # Limitamos a 3 tags para no saturar la tarjeta
+                    break
+        vacante.tag_nombres = lista_tags
+
+        # B. Inicial de la Empresa (para el logo placeholder)
+        if vacante.empresa and vacante.empresa.nombre:
+            vacante.empresa_inicial = vacante.empresa.nombre[0].upper()
+        else:
+            vacante.empresa_inicial = "?"
+
+    context = {
+        'vacantes': vacantes
+    }
+    
+    return render(request, 'home_t.html', context)
+
+
 
 '''
 
@@ -114,3 +158,6 @@ def mis_postulaciones(request):#vista de las postulaciones del trabajador
     return render(request, 'mis_postulaciones.html')
 
 '''
+
+def mostrar_base(request):
+    return render(request, 'base_trabajadores.html')
