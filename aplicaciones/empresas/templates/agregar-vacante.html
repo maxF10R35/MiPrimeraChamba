@@ -1,11 +1,327 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="es">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Document</title>
+    <title>Publicar Vacante | Tu Primera Chamba</title>
+    
+    <!-- Bootstrap 5 CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Iconos -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css">
+    
+    <style>
+        body { background-color: #f8f9fa; font-family: 'Segoe UI', sans-serif; }
+        .form-section { background: white; padding: 25px; border-radius: 12px; box-shadow: 0 4px 15px rgba(0,0,0,0.05); margin-bottom: 25px; }
+        .section-title { color: #0d6efd; font-weight: 700; border-bottom: 2px solid #e9ecef; padding-bottom: 10px; margin-bottom: 20px; }
+        
+        /* Estilos para Listas Dinámicas (Requisitos/Prestaciones) */
+        .dynamic-list-container { border: 1px solid #ced4da; border-radius: 6px; padding: 10px; min-height: 50px; display: flex; flex-wrap: wrap; gap: 5px; background: #fff; }
+        .dynamic-item { background-color: #e7f1ff; color: #0d6efd; padding: 5px 12px; border-radius: 20px; font-size: 0.9rem; display: flex; align-items: center; }
+        .dynamic-item .remove-btn { margin-left: 8px; cursor: pointer; color: #0a58ca; font-weight: bold; }
+        .dynamic-item .remove-btn:hover { color: #dc3545; }
+        .input-transparent { border: none; outline: none; flex-grow: 1; min-width: 150px; }
+
+        /* Estilos para Etiquetas */
+        .tag-category-title { font-size: 0.85rem; font-weight: 700; color: #6c757d; text-transform: uppercase; margin-top: 15px; margin-bottom: 8px; }
+        .tag-btn { border-radius: 50px; padding: 5px 12px; font-size: 0.85rem; border: 1px solid #dee2e6; background-color: #fff; color: #495057; margin-bottom: 6px; margin-right: 4px; cursor: pointer; transition: all 0.2s; }
+        .tag-btn:hover { background-color: #e9ecef; }
+        .tag-btn.active { background-color: #0d6efd; color: white; border-color: #0d6efd; }
+    </style>
 </head>
 <body>
-    <h1> Pantalla para agregar una vacante </h1>
+
+    <nav class="navbar navbar-light bg-white shadow-sm mb-4">
+        <div class="container">
+            <span class="navbar-brand fw-bold text-primary"><i class="bi bi-briefcase-fill me-2"></i>Tu Primera Chamba</span>
+            <a href="/" class="btn btn-outline-secondary btn-sm">Volver al Dashboard</a>
+        </div>
+    </nav>
+
+    <div class="container pb-5">
+        <div class="row justify-content-center">
+            <div class="col-lg-10">
+                <h2 class="mb-4 fw-bold">Publicar Nueva Vacante</h2>
+
+                <form method="POST" action="" id="vacanteForm">
+                    {% csrf_token %}
+
+                    <!-- SECCIÓN 1: Detalles Generales -->
+                    <div class="form-section">
+                        <h4 class="section-title"><i class="bi bi-file-text me-2"></i>Detalles del Puesto</h4>
+                        
+                        <div class="row g-3">
+                            <div class="col-md-12">
+                                <label class="form-label fw-bold">Nombre del Puesto <span class="text-danger">*</span></label>
+                                <input type="text" class="form-control" name="nombre_puesto" placeholder="Ej. Desarrollador Python Jr." required>
+                            </div>
+                            
+                            <div class="col-md-6">
+                                <label class="form-label fw-bold">Salario Mensual ($) <span class="text-danger">*</span></label>
+                                <input type="number" class="form-control" name="salario" placeholder="Ej. 15000" step="0.01" required>
+                            </div>
+                            
+                            <div class="col-md-6">
+                                <label class="form-label fw-bold">Tipo de Contrato</label>
+                                <select class="form-select" name="tipo_contrato" required>
+                                    <option value="Tiempo Completo">Tiempo Completo</option>
+                                    <option value="Medio Tiempo">Medio Tiempo</option>
+                                    <option value="Por Proyecto">Por Proyecto</option>
+                                    <option value="Prácticas">Prácticas Profesionales</option>
+                                </select>
+                            </div>
+
+                            <div class="col-md-6">
+                                <label class="form-label fw-bold">Horario</label>
+                                <input type="text" class="form-control" name="horario" placeholder="Ej. Lunes a Viernes, 9am - 6pm" required>
+                            </div>
+
+                            <div class="col-md-6">
+                                <label class="form-label fw-bold">Ubicación</label>
+                                <input type="text" class="form-control" name="ubicacion" placeholder="Ej. Colonia Roma, CDMX (o 'Remoto')" required>
+                            </div>
+
+                            <div class="col-12">
+                                <label class="form-label fw-bold">Descripción General <span class="text-danger">*</span></label>
+                                <textarea class="form-control" name="descripcion" rows="4" placeholder="Describe las responsabilidades y el día a día..." required></textarea>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- SECCIÓN 2: Requisitos y Prestaciones (Listas Dinámicas) -->
+                    <div class="form-section">
+                        <h4 class="section-title"><i class="bi bi-list-check me-2"></i>Requisitos y Oferta</h4>
+                        
+                        <div class="mb-4">
+                            <label class="form-label fw-bold">Requisitos <span class="text-danger">*</span></label>
+                            <small class="text-muted d-block mb-2">Escribe un requisito y presiona <kbd>Enter</kbd> o el botón "+" para agregarlo.</small>
+                            
+                            <div class="dynamic-list-container" id="reqContainer">
+                                <input type="text" class="input-transparent" id="reqInput" placeholder="Ej. Experiencia en Django...">
+                            </div>
+                            <button type="button" class="btn btn-sm btn-outline-primary mt-2" onclick="addItem('req')">+ Agregar requisito</button>
+                            <!-- Input oculto para enviar al backend -->
+                            <input type="hidden" name="requisitos" id="requisitosFinal" required>
+                        </div>
+
+                        <div class="mb-3">
+                            <label class="form-label fw-bold">Prestaciones y Beneficios <span class="text-danger">*</span></label>
+                            <small class="text-muted d-block mb-2">Seguro médico, vacaciones, bonos, etc.</small>
+                            
+                            <div class="dynamic-list-container" id="presContainer">
+                                <input type="text" class="input-transparent" id="presInput" placeholder="Ej. Seguro de Gastos Médicos...">
+                            </div>
+                            <button type="button" class="btn btn-sm btn-outline-primary mt-2" onclick="addItem('pres')">+ Agregar prestación</button>
+                            <!-- Input oculto para enviar al backend -->
+                            <input type="hidden" name="prestaciones" id="prestacionesFinal" required>
+                        </div>
+                    </div>
+
+                    <!-- SECCIÓN 3: Categorización SINCO -->
+                    <div class="form-section">
+                        <h4 class="section-title"><i class="bi bi-diagram-3 me-2"></i>Clasificación (SINCO)</h4>
+                        <div class="alert alert-info py-2 small">Selecciona paso a paso para categorizar correctamente el puesto.</div>
+
+                        <div class="row g-3">
+                            <div class="col-md-4">
+                                <label class="form-label small text-muted">1. División</label>
+                                <select class="form-select" id="sinco_div">
+                                    <option value="" disabled selected>Selecciona...</option>
+                                </select>
+                            </div>
+                            <div class="col-md-4">
+                                <label class="form-label small text-muted">2. Grupo</label>
+                                <select class="form-select" id="sinco_gpo" disabled>
+                                    <option value="" disabled selected>Esperando...</option>
+                                </select>
+                            </div>
+                            <div class="col-md-4">
+                                <label class="form-label fw-bold">3. Subgrupo (Final)</label>
+                                <select class="form-select border-primary" id="sinco_sub" disabled>
+                                    <option value="" disabled selected>Esperando...</option>
+                                </select>
+                            </div>
+                        </div>
+                        <input type="hidden" name="area_ocupacion" id="areaOcupacionFinal" required>
+                    </div>
+
+                    <!-- SECCIÓN 4: Etiquetas (VACANTE_TAGS) -->
+                    <div class="form-section">
+                        <h4 class="section-title"><i class="bi bi-tags me-2"></i>Etiquetas del Perfil</h4>
+                        <p class="small text-muted">Selecciona las habilidades blandas, el sector y el rol que mejor describan la vacante.</p>
+                        
+                        <div id="tagsWrapper">
+                            <!-- Se generará dinámicamente con JS -->
+                        </div>
+                        
+                        <input type="hidden" name="etiquetas" id="etiquetasFinal">
+                    </div>
+
+                    <div class="d-grid gap-2 mb-5">
+                        <button type="submit" class="btn btn-primary btn-lg shadow fw-bold">Publicar Vacante</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    
+    <script>
+        // --- 1. DATOS DESDE DJANGO ---
+        // Descomenta esto en producción:
+        const SINCO = JSON.parse('{{ sinco_json|escapejs }}');
+        const TAGS = JSON.parse('{{ tags_json|escapejs }}');
+
+        // MOCK DATA PARA PREVIEW (Eliminar en producción)
+        //const SINCO = {
+        //    '1': {'nombre': 'Funcionarios', 'grupos': {'11': {'nombre': 'Altas Autoridades', 'subgrupos': {'111': 'Legisladores', '112': 'Presidentes'}}}},
+        //    '2': {'nombre': 'Profesionistas', 'grupos': {'22': {'nombre': 'Ingenierías', 'subgrupos': {'226': 'Ing. Civil', '227': 'Sistemas Computacionales'}}}}
+        //};
+        //const TAGS = {
+        //    '1': {'nombre': 'Sector', 'etiquetas': {'11': {'nombre': 'Tecnología'}, '13': {'nombre': 'Finanzas'}}},
+        //    '3': {'nombre': 'Soft Skills', 'etiquetas': {'31': {'nombre': 'Proactividad'}, '36': {'nombre': 'Trabajo en equipo'}}}
+        //};
+
+        // --- 2. LÓGICA DE LISTAS DINÁMICAS (Requisitos y Prestaciones) ---
+        const lists = {
+            'req': { items: [], container: document.getElementById('reqContainer'), input: document.getElementById('reqInput'), hidden: document.getElementById('requisitosFinal') },
+            'pres': { items: [], container: document.getElementById('presContainer'), input: document.getElementById('presInput'), hidden: document.getElementById('prestacionesFinal') }
+        };
+
+        function addItem(type) {
+            const config = lists[type];
+            const text = config.input.value.trim();
+            if (!text) return;
+
+            config.items.push(text);
+            renderList(type);
+            config.input.value = '';
+            config.input.focus();
+        }
+
+        function removeItem(type, index) {
+            lists[type].items.splice(index, 1);
+            renderList(type);
+        }
+
+        function renderList(type) {
+            const config = lists[type];
+            // Limpiar visualmente (manteniendo el input)
+            const inputEl = config.input; // Guardamos referencia
+            config.container.innerHTML = ''; // Borramos todo
+            
+            // Recrear items
+            config.items.forEach((text, index) => {
+                const div = document.createElement('div');
+                div.className = 'dynamic-item';
+                div.innerHTML = `${text} <span class="remove-btn" onclick="removeItem('${type}', ${index})">&times;</span>`;
+                config.container.appendChild(div);
+            });
+            
+            // Volver a poner el input al final
+            config.container.appendChild(inputEl);
+            
+            // Actualizar input oculto (separado por comas)
+            config.hidden.value = config.items.join('|||'); // Usamos ||| para evitar bugs si el usuario usa comas
+        }
+
+        // Event Listeners para Inputs (Enter key)
+        ['req', 'pres'].forEach(type => {
+            lists[type].input.addEventListener('keydown', (e) => {
+                if (e.key === 'Enter') {
+                    e.preventDefault();
+                    addItem(type);
+                }
+            });
+        });
+
+
+        // --- 3. LÓGICA SINCO (CASCADA) ---
+        const sDiv = document.getElementById('sinco_div');
+        const sGpo = document.getElementById('sinco_gpo');
+        const sSub = document.getElementById('sinco_sub');
+        const areaHidden = document.getElementById('areaOcupacionFinal');
+
+        // Llenar Divisiones
+        for (const [k, v] of Object.entries(SINCO)) sDiv.add(new Option(`${k} - ${v.nombre}`, k));
+
+        sDiv.addEventListener('change', function() {
+            sGpo.innerHTML = '<option value="" disabled selected>Selecciona Grupo...</option>';
+            sSub.innerHTML = '<option value="" disabled selected>Esperando...</option>';
+            sSub.disabled = true; areaHidden.value = '';
+            
+            const grupos = SINCO[this.value].grupos;
+            for (const [k, v] of Object.entries(grupos)) sGpo.add(new Option(`${k} - ${v.nombre}`, k));
+            sGpo.disabled = false;
+        });
+
+        sGpo.addEventListener('change', function() {
+            sSub.innerHTML = '<option value="" disabled selected>Selecciona Subgrupo...</option>';
+            areaHidden.value = '';
+            
+            const subgrupos = SINCO[sDiv.value].grupos[this.value].subgrupos;
+            for (const [k, v] of Object.entries(subgrupos)) sSub.add(new Option(`${k} - ${v}`, k));
+            sSub.disabled = false;
+        });
+
+        sSub.addEventListener('change', function() {
+            areaHidden.value = this.value;
+        });
+
+
+        // --- 4. LÓGICA ETIQUETAS (TODAS LAS CATEGORÍAS) ---
+        const tagsWrapper = document.getElementById('tagsWrapper');
+        const tagsHidden = document.getElementById('etiquetasFinal');
+        const selectedTags = new Set();
+
+        for (const [catKey, catData] of Object.entries(TAGS)) {
+            // Título de Categoría
+            const title = document.createElement('div');
+            title.className = 'tag-category-title';
+            title.textContent = catData.nombre;
+            tagsWrapper.appendChild(title);
+
+            // Contenedor de botones
+            const btnContainer = document.createElement('div');
+            
+            for (const [tagKey, tagData] of Object.entries(catData.etiquetas)) {
+                const btn = document.createElement('button');
+                btn.type = 'button';
+                btn.className = 'tag-btn';
+                btn.textContent = tagData.nombre;
+                btn.dataset.id = tagKey;
+                
+                btn.addEventListener('click', function() {
+                    if (selectedTags.has(tagKey)) {
+                        selectedTags.delete(tagKey);
+                        this.classList.remove('active');
+                    } else {
+                        selectedTags.add(tagKey);
+                        this.classList.add('active');
+                    }
+                    tagsHidden.value = Array.from(selectedTags).join(',');
+                });
+                
+                btnContainer.appendChild(btn);
+            }
+            tagsWrapper.appendChild(btnContainer);
+        }
+
+        // --- 5. VALIDACIÓN FINAL ANTES DE ENVIAR ---
+        document.getElementById('vacanteForm').addEventListener('submit', function(e) {
+            if (lists.req.items.length === 0) {
+                alert("Debes agregar al menos un requisito.");
+                e.preventDefault();
+                return;
+            }
+            if (lists.pres.items.length === 0) {
+                alert("Debes agregar al menos una prestación.");
+                e.preventDefault();
+                return;
+            }
+        });
+
+    </script>
 </body>
 </html>
