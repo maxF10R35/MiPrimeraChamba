@@ -202,7 +202,7 @@
                     <p>Publica tus vacantes y deja que nuestra IA te conecte con los mejores perfiles de tu zona. Ideal para PyMEs y negocios locales que buscan crecer.</p>
                     <div class="buttons">
                         <a href="empresas/SignUp" class="btn btn-primary">Registra tu Empresa</a>
-                        <a href="empresas/SignIn" class="btn btn-secondary">Iniciar Sesión</a>
+                        <a href="{% url 'login' %}" class="btn btn-secondary">Iniciar Sesión</a>
                     </div>
                 </div>
                 <!-- Tarjeta para Candidatos -->
@@ -211,8 +211,8 @@
                     <h3>Para Candidatos</h3>
                     <p>Olvídate del tráfico. Crea tu perfil y descubre oportunidades laborales a minutos de tu casa, en las tiendas y empresas que ya conoces.</p>
                     <div class="buttons">
-                        <a href="#" class="btn btn-primary">Crear mi Perfil</a>
-                        <a href="#" class="btn btn-secondary">Iniciar Sesión</a>
+                        <a href="{% url 'registrar_trabajador' %}" class="btn btn-primary">Crear mi Perfil</a>
+                        <a href="{% url 'login' %}" class="btn btn-secondary">Iniciar Sesión</a>
                     </div>
                 </div>
             </div>

@@ -16,10 +16,14 @@ Including another URLconf
 """
 from django.contrib import admin
 from django.urls import path, include
+from aplicaciones.general import views as general_views # Importamos la vista nueva
+
 
 urlpatterns = [
     path('admin/', admin.site.urls),
-    path('', include('aplicaciones.general.urls')),
+    path('', general_views.pagina_inicio, name='inicio'), # Opcional: Raíz lleva al login
+    path('login/', general_views.login_usuario, name='login'),       # <--- LA IMPORTANTE
+    path('logout/', general_views.logout_usuario, name='logout'),
     path('empresas/', include('aplicaciones.empresas.urls')),
     path('trabajadores/', include('aplicaciones.trabajadores.urls')),
 ]

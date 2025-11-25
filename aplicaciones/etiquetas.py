@@ -647,4 +647,71 @@ VACANTE_TAGS = {
     }
 }
 
+GENERO_OPCIONES = {
+    '1': 'Mujer',
+    '2': 'Hombre',
+    '3': 'No binario',
+    '4': 'Género fluido',
+    '5': 'Agénero',
+    '6': 'Transgénero',
+    '7': 'Otro',
+    '99': 'Prefiero no decirlo'
+}
 
+# 2. NIVEL DE ESTUDIOS (Progreso Académico)
+# Estructurado jerárquicamente por valor académico aproximado.
+# Las claves están diseñadas para que, si las ordenas numéricamente, 
+# queden en orden de nivel educativo (del más básico al más avanzado).
+NIVEL_ESTUDIOS = {
+    # Educación Básica / Media
+    '10': 'Secundaria - Trunca',
+    '11': 'Secundaria - Finalizada',
+    '20': 'Bachillerato / Preparatoria - Trunco',
+    '21': 'Bachillerato / Preparatoria - En curso',
+    '22': 'Bachillerato / Preparatoria - Finalizado',
+    
+    # Educación Técnica
+    '30': 'Carrera Técnica - En curso',
+    '31': 'Carrera Técnica - Finalizada',
+    '32': 'Técnico Superior Universitario (TSU) - Finalizado',
+
+    # Educación Superior (Licenciatura/Ingeniería)
+    '40': 'Licenciatura / Ingeniería - Trunca',
+    '41': 'Licenciatura / Ingeniería - En curso',
+    '42': 'Licenciatura / Ingeniería - Pasante (Sin título)',
+    '43': 'Licenciatura / Ingeniería - Titulado',
+
+    # Posgrado
+    '50': 'Especialidad - En curso',
+    '51': 'Especialidad - Finalizada',
+    '60': 'Maestría - En curso',
+    '61': 'Maestría - Finalizada',
+    '70': 'Doctorado - En curso',
+    '71': 'Doctorado - Finalizado'
+}
+
+# 3. TIEMPO DE EXPERIENCIA
+# Rangos definidos para facilitar el filtrado de vacantes.
+# "0" es ideal para tu app "Tu Primera Chamba".
+TIEMPO_EXPERIENCIA = {
+    '0': 'Sin experiencia',
+    '1': 'Menos de 6 meses',
+    '2': 'De 6 meses a 1 año',
+    '3': 'De 1 a 2 años',
+    '4': 'De 2 a 3 años',
+    '5': 'De 3 a 5 años',
+    '6': 'De 5 a 10 años',
+    '7': 'Más de 10 años'
+}
+
+# 4. DISPONIBILIDAD (Opcional pero recomendado para trabajadores)
+# futura actualización 
+DISPONIBILIDAD_OPCIONES = {
+    '1': 'Inmediata',
+    '2': '1 semana de aviso',
+    '3': '2 semanas de aviso',
+    '4': 'A partir de fecha específica',
+    '5': 'Solo fines de semana',
+    '6': 'Medio tiempo (Mañana)',
+    '7': 'Medio tiempo (Tarde)'
+}

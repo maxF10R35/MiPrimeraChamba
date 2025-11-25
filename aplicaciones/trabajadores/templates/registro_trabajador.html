@@ -1,0 +1,373 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Registro de Candidato | Tu Primera Chamba</title>
+    
+    <!-- Bootstrap 5 CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css">
+    
+    <style>
+        body { background-color: #f8f9fa; font-family: 'Segoe UI', sans-serif; }
+        .form-section-title { font-size: 1.1rem; font-weight: 700; color: #0d6efd; border-bottom: 2px solid #e9ecef; padding-bottom: 10px; margin: 30px 0 20px 0; }
+        .card-register { border: none; border-radius: 15px; box-shadow: 0 10px 30px rgba(0,0,0,0.08); }
+        
+        /* Estilos Tags */
+        .tag-container { max-height: 200px; overflow-y: auto; border: 1px solid #dee2e6; padding: 10px; border-radius: 8px; background: #fff; }
+        .tag-btn { border-radius: 50px; padding: 6px 14px; font-size: 0.85rem; border: 1px solid #dee2e6; background-color: #fff; color: #495057; margin: 3px; cursor: pointer; transition: all 0.2s; user-select: none; }
+        .tag-btn:hover { background-color: #e9ecef; }
+        .tag-btn.active { background-color: #0d6efd; color: white; border-color: #0d6efd; box-shadow: 0 2px 5px rgba(13, 110, 253, 0.3); }
+        
+        .required-asterisk { color: #dc3545; }
+
+        /* Estilos Validación Password */
+        .password-requirements { font-size: 0.85rem; color: #6c757d; margin-top: 10px; background: #f8f9fa; padding: 10px; border-radius: 8px; }
+        .req-item { margin-bottom: 2px; display: flex; align-items: center; }
+        .req-item i { margin-right: 8px; font-size: 1rem; }
+        .valid-req { color: #198754; }
+        .invalid-req { color: #dc3545; }
+    </style>
+</head>
+<body>
+
+    <nav class="navbar navbar-light bg-white shadow-sm mb-5">
+        <div class="container">
+            <a class="navbar-brand fw-bold text-primary" href="/">
+                <i class="bi bi-briefcase-fill me-2"></i>Tu Primera Chamba
+            </a>
+            <span class="navbar-text">Registro de Candidatos</span>
+        </div>
+    </nav>
+
+    <div class="container mb-5">
+        
+        {% if messages %}
+            <div class="row justify-content-center mb-3">
+                <div class="col-lg-9">
+                    {% for message in messages %}
+                        <div class="alert alert-{{ message.tags }} alert-dismissible fade show" role="alert">
+                            {{ message }}
+                            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                        </div>
+                    {% endfor %}
+                </div>
+            </div>
+        {% endif %}
+
+        <div class="row justify-content-center">
+            <div class="col-lg-9">
+                <div class="card card-register p-4 p-md-5">
+                    <div class="text-center mb-4">
+                        <h2 class="fw-bold">Crea tu Perfil Profesional</h2>
+                        <p class="text-muted">Da el primer paso hacia tu carrera ideal</p>
+                    </div>
+
+                    <form method="POST" action="" id="registroForm">
+                        {% csrf_token %}
+                        
+                        <!-- 1. DATOS DE CUENTA -->
+                        <div class="form-section-title mt-0"><i class="bi bi-shield-lock me-2"></i>Cuenta de Usuario</div>
+                        <div class="mb-3">
+                            <label class="form-label">Usuario <span class="required-asterisk">*</span></label>
+                            <input type="text" class="form-control" name="username" required>
+                        </div>
+                        
+                        <div class="row g-3">
+                            <div class="col-md-6">
+                                <label class="form-label">Contraseña <span class="required-asterisk">*</span></label>
+                                <input type="password" class="form-control" name="password" id="password" required>
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label">Confirmar Contraseña <span class="required-asterisk">*</span></label>
+                                <input type="password" class="form-control" name="confirm_password" id="confirm_password" disabled required>
+                                <div id="matchError" class="form-text text-danger d-none fw-bold">Las contraseñas no coinciden.</div>
+                            </div>
+                        </div>
+
+                        <!-- Lista de Requisitos -->
+                        <div class="password-requirements mt-3">
+                            <small class="d-block mb-2 fw-bold text-uppercase" style="font-size: 0.75rem;">Requisitos de seguridad:</small>
+                            <div class="req-item" id="req-length"><i class="bi bi-x-circle"></i> Mínimo 8 caracteres</div>
+                            <div class="req-item" id="req-number"><i class="bi bi-x-circle"></i> Al menos un número</div>
+                            <div class="req-item" id="req-uppercase"><i class="bi bi-x-circle"></i> Al menos una mayúscula</div>
+                            <div class="req-item" id="req-special"><i class="bi bi-x-circle"></i> Un carácter especial (@$!%*?&)</div>
+                        </div>
+
+                        <!-- 2. INFORMACIÓN PERSONAL -->
+                        <div class="form-section-title"><i class="bi bi-person-vcard me-2"></i>Información Personal</div>
+                        <div class="row g-3">
+                            <div class="col-md-4">
+                                <label class="form-label">Nombre(s) <span class="required-asterisk">*</span></label>
+                                <input type="text" class="form-control" name="nombre" required>
+                            </div>
+                            <div class="col-md-4">
+                                <label class="form-label">Apellido Paterno <span class="required-asterisk">*</span></label>
+                                <input type="text" class="form-control" name="apellido_p" required>
+                            </div>
+                            <div class="col-md-4">
+                                <label class="form-label">Apellido Materno <span class="required-asterisk">*</span></label>
+                                <input type="text" class="form-control" name="apellido_m" required>
+                            </div>
+                            
+                            <div class="col-md-4">
+                                <label class="form-label">Género <span class="required-asterisk">*</span></label>
+                                <select class="form-select" name="genero" id="generoSelect" required>
+                                    <option value="" disabled selected>Selecciona...</option>
+                                </select>
+                            </div>
+                            <div class="col-md-4">
+                                <label class="form-label">Nacionalidad <span class="required-asterisk">*</span></label>
+                                <input type="text" class="form-control" name="nacionalidad" required>
+                            </div>
+                            <div class="col-md-4">
+                                <label class="form-label">Código Postal</label>
+                                <input type="number" class="form-control" name="cod_post">
+                            </div>
+                            
+                            <div class="col-md-6">
+                                <label class="form-label">Email <span class="required-asterisk">*</span></label>
+                                <input type="email" class="form-control" name="email" required>
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label">Teléfono</label>
+                                <input type="tel" class="form-control" name="telefono">
+                            </div>
+
+                            <div class="col-12 mt-3">
+                                <div class="form-check form-switch">
+                                    <!-- Checkbox envía 'on' si está marcado, pero el backend lo convierte a bool -->
+                                    <input class="form-check-input" type="checkbox" name="movilidad_limitada" id="movilidad">
+                                    <label class="form-check-label" for="movilidad">Tengo movilidad limitada (Ayúdanos a encontrar empleos accesibles)</label>
+                                </div>
+                            </div>
+                            
+                            <div class="col-12">
+                                <label class="form-label">Biografía / Acerca de ti</label>
+                                <textarea class="form-control" name="biografia" rows="3" placeholder="Breve descripción de quién eres..."></textarea>
+                            </div>
+                        </div>
+
+                        <!-- 3. PERFIL PROFESIONAL -->
+                        <div class="form-section-title"><i class="bi bi-mortarboard me-2"></i>Perfil Profesional</div>
+                        <div class="row g-3">
+                            <div class="col-md-6">
+                                <label class="form-label">Nivel de Estudios <span class="required-asterisk">*</span></label>
+                                <select class="form-select" name="estudios" id="estudiosSelect" required>
+                                    <option value="" disabled selected>Selecciona...</option>
+                                </select>
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label">Título Obtenido / Carrera</label>
+                                <input type="text" class="form-control" name="titulo" placeholder="Ej. Ingeniería en Sistemas">
+                            </div>
+
+                            <!-- Reordenado: Primero Área, luego Tiempo -->
+                            <div class="col-12">
+                                <label class="form-label">Última Área de Ocupación (SINCO)</label>
+                                <div class="alert alert-light border small py-2 mb-2">Selecciona en orden: División &rarr; Grupo &rarr; Subgrupo</div>
+                                <div class="d-flex gap-2">
+                                    <select class="form-select form-select-sm" id="sinco_div"><option value="" disabled selected>1. División</option></select>
+                                    <select class="form-select form-select-sm" id="sinco_gpo" disabled><option value="" disabled selected>2. Grupo</option></select>
+                                    <select class="form-select form-select-sm border-primary" id="sinco_sub" disabled><option value="" disabled selected>3. Subgrupo</option></select>
+                                </div>
+                                <input type="hidden" name="ult_area_ocup" id="areaOcupacionHidden">
+                            </div>
+
+                            <div class="col-md-6">
+                                <label class="form-label">Tiempo de Experiencia en esta área</label>
+                                <select class="form-select" name="ult_exp" id="expSelect">
+                                    <option value="" disabled selected>Selecciona...</option>
+                                </select>
+                            </div>
+
+                            <div class="col-12">
+                                <label class="form-label">Descripción de Experiencia</label>
+                                <textarea class="form-control" name="descripcion_exp" rows="3" placeholder="Cuéntanos sobre tus últimos trabajos y logros..."></textarea>
+                            </div>
+                        </div>
+
+                        <!-- 4. HABILIDADES E INTERESES -->
+                        <div class="form-section-title"><i class="bi bi-stars me-2"></i>Skills e Intereses</div>
+                        
+                        <!-- Selector SINCO 2: Área de Interés -->
+                        <div class="mb-4">
+                            <label class="form-label fw-bold">Área de Interés Principal (SINCO)</label>
+                            <small class="text-muted d-block mb-2">¿En qué sector industrial buscas empleo?</small>
+                            <div class="d-flex gap-2">
+                                <select class="form-select form-select-sm" id="interes_div"><option value="" disabled selected>1. División</option></select>
+                                <select class="form-select form-select-sm" id="interes_gpo" disabled><option value="" disabled selected>2. Grupo</option></select>
+                                <select class="form-select form-select-sm border-primary" id="interes_sub" disabled><option value="" disabled selected>3. Subgrupo</option></select>
+                            </div>
+                            <input type="hidden" name="area_interes" id="areaInteresHidden">
+                        </div>
+
+                        <!-- Hard Skills -->
+                        <div class="mb-4">
+                            <label class="form-label fw-bold d-block">Habilidades Duras (Hard Skills)</label>
+                            <small class="text-muted mb-2 d-block">Conocimientos técnicos (Ej. Programación, Idiomas)</small>
+                            <div id="hardSkillsContainer" class="tag-container d-flex flex-wrap"></div>
+                            <input type="hidden" name="hard_skills" id="hardSkillsInput">
+                        </div>
+
+                        <!-- Soft Skills -->
+                        <div class="mb-4">
+                            <label class="form-label fw-bold d-block">Habilidades Blandas (Soft Skills)</label>
+                            <small class="text-muted mb-2 d-block">Competencias personales (Ej. Liderazgo)</small>
+                            <div id="softSkillsContainer" class="tag-container d-flex flex-wrap"></div>
+                            <input type="hidden" name="soft_skills" id="softSkillsInput">
+                        </div>
+
+                        <!-- Intereses Tags -->
+                        <div class="mb-4">
+                            <label class="form-label fw-bold d-block">Intereses Adicionales (Tags)</label>
+                            <div id="interesesContainer" class="tag-container d-flex flex-wrap"></div>
+                            <input type="hidden" name="intereses" id="interesesInput">
+                        </div>
+
+                        <div class="d-grid gap-2 mt-5">
+                            <button type="submit" class="btn btn-primary btn-lg shadow" id="submitBtn" disabled>Registrarme</button>
+                        </div>
+
+                        <div class="text-center mt-3">
+                            <small class="text-muted">¿Ya tienes cuenta? <a href="#" class="text-decoration-none">Inicia Sesión</a></small>
+                        </div>
+
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+
+    <script>
+        // 1. DATOS DE DJANGO
+        const GENERO_DATA = JSON.parse('{{ generos_json|escapejs }}');
+        const ESTUDIOS_DATA = JSON.parse('{{ estudios_json|escapejs }}');
+        const EXP_DATA = JSON.parse('{{ experiencia_json|escapejs }}');
+        const SINCO = JSON.parse('{{ sinco_json|escapejs }}');
+        const TAGS_HARD = JSON.parse('{{ tags_hard_json|escapejs }}');
+        const TAGS_SOFT = JSON.parse('{{ tags_soft_json|escapejs }}');
+        const TAGS_IND = JSON.parse('{{ tags_industria_json|escapejs }}');
+
+        // 2. POBLAR DROPDOWNS
+        function populateSelect(id, data) {
+            const sel = document.getElementById(id);
+            for(const [k, v] of Object.entries(data)) sel.add(new Option(v, k));
+        }
+        populateSelect('generoSelect', GENERO_DATA);
+        populateSelect('estudiosSelect', ESTUDIOS_DATA);
+        populateSelect('expSelect', EXP_DATA);
+
+        // 3. LÓGICA SINCO (REUTILIZABLE)
+        function setupSincoCascada(divId, gpoId, subId, hiddenId) {
+            const sDiv = document.getElementById(divId);
+            const sGpo = document.getElementById(gpoId);
+            const sSub = document.getElementById(subId);
+            const hidden = document.getElementById(hiddenId);
+
+            for (const [k, v] of Object.entries(SINCO)) sDiv.add(new Option(`${k} - ${v.nombre}`, k));
+
+            sDiv.addEventListener('change', function() {
+                sGpo.innerHTML = '<option disabled selected>2. Grupo</option>'; 
+                sSub.innerHTML = '<option disabled selected>3. Subgrupo</option>'; sSub.disabled = true; hidden.value = "";
+                const grupos = SINCO[this.value].grupos;
+                for(const [k, v] of Object.entries(grupos)) sGpo.add(new Option(`${k} - ${v.nombre}`, k));
+                sGpo.disabled = false;
+            });
+
+            sGpo.addEventListener('change', function() {
+                sSub.innerHTML = '<option disabled selected>3. Subgrupo</option>'; hidden.value = "";
+                const subgrupos = SINCO[sDiv.value].grupos[this.value].subgrupos;
+                for(const [k, v] of Object.entries(subgrupos)) sSub.add(new Option(`${k} - ${v}`, k));
+                sSub.disabled = false;
+            });
+
+            sSub.addEventListener('change', function() { hidden.value = this.value; });
+        }
+
+        // Inicializar los DOS selectores SINCO
+        setupSincoCascada('sinco_div', 'sinco_gpo', 'sinco_sub', 'areaOcupacionHidden');
+        setupSincoCascada('interes_div', 'interes_gpo', 'interes_sub', 'areaInteresHidden');
+
+        // 4. LÓGICA DE TAGS
+        function renderTags(containerId, hiddenId, dataObj) {
+            const container = document.getElementById(containerId);
+            const hiddenInput = document.getElementById(hiddenId);
+            const selected = new Set();
+
+            for(const [id, tagData] of Object.entries(dataObj)) {
+                const btn = document.createElement('button');
+                btn.type = 'button';
+                btn.className = 'tag-btn';
+                btn.textContent = tagData.nombre; 
+                btn.addEventListener('click', function() {
+                    if(selected.has(id)) { selected.delete(id); this.classList.remove('active'); } 
+                    else { selected.add(id); this.classList.add('active'); }
+                    hiddenInput.value = Array.from(selected).join(',');
+                });
+                container.appendChild(btn);
+            }
+        }
+        renderTags('hardSkillsContainer', 'hardSkillsInput', TAGS_HARD);
+        renderTags('softSkillsContainer', 'softSkillsInput', TAGS_SOFT);
+        renderTags('interesesContainer', 'interesesInput', TAGS_IND);
+
+        // 5. VALIDACIÓN PASSWORD
+        const pass1 = document.getElementById('password');
+        const pass2 = document.getElementById('confirm_password');
+        const matchError = document.getElementById('matchError');
+        const submitBtn = document.getElementById('submitBtn');
+        
+        const reqs = {
+            length: document.getElementById('req-length'),
+            number: document.getElementById('req-number'),
+            uppercase: document.getElementById('req-uppercase'),
+            special: document.getElementById('req-special')
+        };
+        const regexList = { length: /.{8,}/, number: /\d/, uppercase: /[A-Z]/, special: /[@$!%*?&]/ };
+
+        function updateReq(el, isValid) {
+            const icon = el.querySelector('i');
+            if(isValid) { el.className = 'req-item valid-req'; icon.className = 'bi bi-check-circle-fill'; }
+            else { el.className = 'req-item invalid-req'; icon.className = 'bi bi-x-circle'; }
+        }
+
+        function validateAll() {
+            const p1 = pass1.value;
+            const p2 = pass2.value;
+            
+            const isLen = regexList.length.test(p1);
+            const isNum = regexList.number.test(p1);
+            const isUp = regexList.uppercase.test(p1);
+            const isSpec = regexList.special.test(p1);
+
+            updateReq(reqs.length, isLen);
+            updateReq(reqs.number, isNum);
+            updateReq(reqs.uppercase, isUp);
+            updateReq(reqs.special, isSpec);
+
+            const isComplex = isLen && isNum && isUp && isSpec;
+            pass2.disabled = !isComplex;
+            if(!isComplex) pass2.value = '';
+
+            let isMatch = false;
+            if(p2.length > 0) {
+                isMatch = (p1 === p2);
+                if(isMatch) { matchError.classList.add('d-none'); pass2.classList.remove('is-invalid'); pass2.classList.add('is-valid'); }
+                else { matchError.classList.remove('d-none'); pass2.classList.add('is-invalid'); }
+            } else {
+                matchError.classList.add('d-none'); pass2.classList.remove('is-invalid');
+            }
+
+            submitBtn.disabled = !(isComplex && isMatch);
+        }
+
+        pass1.addEventListener('input', validateAll);
+        pass2.addEventListener('input', validateAll);
+
+    </script>
+</body>
+</html>

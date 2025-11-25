@@ -3,7 +3,8 @@ from aplicaciones.etiquetas import VACANTE_TAGS, SINCO
 from django.contrib import messages
 from django.contrib.auth.models import User
 from django.contrib.auth import login, logout, authenticate
-from django.contrib.auth.decorators import login_required
+#from django.contrib.auth.decorators import login_required
+from aplicaciones.general.decorators import empresa_required
 from django.shortcuts import get_object_or_404
 from aplicaciones.empresas.models import Empresa, Vacante, Postulacion
 from aplicaciones.trabajadores.models import Trabajador
@@ -67,7 +68,7 @@ def SignUp(request):
     return render(request, 'signup.html', context)
 
 
-
+'''
 def SignIn(request):
     if request.method == 'POST':
         usuario_input = request.POST.get('username') # El HTML manda 'username' aunque sea email
@@ -107,18 +108,19 @@ def SignIn(request):
     # Si es GET o falló el login, mostramos la página
     return render(request, 'signin.html')
 
+'''
 
-
+'''
 def logout_usuario(request):
     logout(request)
     messages.info(request, 'Has cerrado sesión exitosamente.')
     return redirect('signin')
-
+'''
 
 
 #Funciones de administracion de vacantes
 
-@login_required
+@empresa_required
 def home(request):
     if request.user.is_anonymous == False:
         empresa = Empresa.objects.get(usuario_id= request.user.id)
@@ -140,7 +142,7 @@ def home(request):
 
 
 
-@login_required
+@empresa_required
 def historial_vacantes(request):
     try:
         empresa = request.user.empresa
@@ -154,7 +156,7 @@ def historial_vacantes(request):
 
 
 
-@login_required
+@empresa_required
 def agregar_vacante(request):
     '''
     # Obtener la empresa del usuario actual
@@ -203,8 +205,7 @@ def agregar_vacante(request):
     return render(request, 'agregar-vacante.html', context)
 
 
-
-@login_required
+@empresa_required
 def detalle_vacante(request, id):
     # 1. Obtener la vacante asegurando que sea de la empresa actual
     vacante = get_object_or_404(Vacante, id=id, empresa=request.user.empresa)
@@ -266,8 +267,7 @@ def detalle_vacante(request, id):
     return render(request, 'detalle-vacante.html', context)
 
 
-
-@login_required
+@empresa_required
 def editar_vacante(request, vacante_id):
     # 1. Obtener vacante y validar propiedad
     vacante = get_object_or_404(Vacante, id=vacante_id, empresa=request.user.empresa)
@@ -320,8 +320,7 @@ def editar_vacante(request, vacante_id):
     return render(request, 'editar-vacante.html', context)
 
 
-
-@login_required
+@empresa_required
 def cambio_estatus(request, vacante_id):
     #if request.method == 'POST':
     # Aseguramos que la vacante pertenezca a la empresa del usuario (Seguridad)
@@ -338,8 +337,7 @@ def cambio_estatus(request, vacante_id):
     return redirect('home') # Vuelve a la misma tabla
 
 
-
-@login_required
+@empresa_required
 def perfil_empresa(request):
     try:
         empresa = request.user.empresa
