@@ -1,0 +1,218 @@
+<!-- 1. HERENCIA: Le decimos a Django que use el marco maestro "base_dashboard.html" -->
+{% extends 'marco.html' %}
+
+<!-- 2. TÍTULO: Definimos el título específico de esta pestaña del navegador -->
+{% block title %}Mis Vacantes | Tu Primera Chamba{% endblock %}
+
+<!-- 3. ESTILOS ESPECÍFICOS: Aquí ponemos el CSS que solo se usa en esta página -->
+{% block extra_css %}
+    <style>
+        /* COMENTARIO: No necesitamos definir background-color al body aquí, 
+           porque el base_dashboard ya tiene un color de fondo gris claro (#f3f6f9). */
+        
+        /* Ajustamos el header para que se vea bien dentro del contenedor del dashboard */
+        .dashboard-header {
+            background: white;
+            padding: 20px 30px; /* Aumenté un poco el padding lateral */
+            margin-bottom: 30px;
+            border-bottom: 1px solid #dee2e6;
+            border-radius: 8px; /* Un toque estético extra */
+        }
+        
+        .card-vacante {
+            border: none;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+            transition: transform 0.2s;
+        }
+        
+        .status-badge {
+            font-size: 0.85rem;
+            padding: 5px 10px;
+            border-radius: 20px;
+        }
+        
+        .stat-item {
+            display: flex;
+            align-items: center;
+            color: #6c757d;
+            font-size: 0.9rem;
+        }
+        
+        .stat-item i { margin-right: 5px; }
+        
+        /* Estilos para tabla */
+        .table-custom th {
+            font-weight: 600;
+            color: #495057;
+            border-bottom-width: 2px;
+            background-color: #fff;
+        }
+        .table-custom td {
+            vertical-align: middle;
+        }
+        
+        /* Vacante Inactiva (visual) */
+        .row-inactive td {
+            color: #adb5bd;
+            background-color: #f8f9fa;
+        }
+        .row-inactive .fw-bold {
+            color: #6c757d;
+            text-decoration: line-through;
+        }
+    </style>
+{% endblock %}
+
+<!-- 4. CONTENIDO PRINCIPAL: Todo lo que va dentro de la zona derecha del dashboard -->
+{% block content %}
+
+    <!-- COMENTARIO: Eliminé el <nav> superior que tenías antes porque el 
+         base_dashboard.html ya incluye el Sidebar y el Topbar. -->
+
+    <!-- Header Dashboard (Título y Botón de Crear) -->
+    <div class="dashboard-header d-flex justify-content-between align-items-center shadow-sm">
+        <div>
+            <h2 class="fw-bold mb-0 text-dark">Gestión de Vacantes</h2>
+            <p class="text-muted mb-0">Administra tus ofertas y revisa postulantes</p>
+        </div>
+        <!-- COMENTARIO: Asegúrate de que la URL 'crear_vacante' exista en tu urls.py -->
+        <a href="{% url 'add' %}" class="btn btn-primary shadow-sm">
+            <i class="bi bi-plus-lg me-2"></i>Nueva Vacante
+        </a>
+    </div>
+
+    <!-- Contenedor de la Tabla -->
+    <!-- COMENTARIO: Quitamos el 'container' y 'pb-5' porque el marco ya tiene padding -->
+    <div class="row">
+        <div class="col-12">
+            
+            <!-- Bloque de Mensajes (Alertas de éxito/error) -->
+            <!-- Nota: Aunque el base_dashboard ya tiene un bloque de mensajes, 
+                 a veces es útil dejar este si quieres que aparezcan justo encima de la tabla. 
+                 Si se duplican, puedes borrar este bloque. -->
+            {% if messages %}
+                {% for message in messages %}
+                    <div class="alert alert-{{ message.tags }} alert-dismissible fade show" role="alert">
+                        {{ message }}
+                        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                    </div>
+                {% endfor %}
+            {% endif %}
+
+            <div class="card card-vacante overflow-hidden">
+                <div class="card-body p-0">
+                    <div class="table-responsive">
+                        <table class="table table-hover table-custom mb-0">
+                            <thead class="bg-light">
+                                <tr>
+                                    <th class="ps-4" style="width: 35%;">Vacante</th>
+                                    <th style="width: 15%;">Publicación</th>
+                                    <th style="width: 15%;" class="text-center">Postulantes</th>
+                                    <th style="width: 15%;" class="text-center">Estado</th>
+                                    <th style="width: 20%;" class="text-end pe-4">Acciones</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for vacante in vacantes %}
+                                <!-- Fila con clase condicional para vacantes inactivas -->
+                                <tr class="{% if not vacante.activa %}row-inactive{% endif %}">
+                                    
+                                    <!-- 1. Nombre y Ubicación -->
+                                    <td class="ps-4 py-3">
+                                        <div class="fw-bold text-dark fs-5">{{ vacante.nombre_puesto }}</div>
+                                        <div class="small text-muted"><i class="bi bi-geo-alt me-1"></i>{{ vacante.ubicacion }}</div>
+                                    </td>
+
+                                    <!-- 2. Fecha -->
+                                    <td>
+                                        <div class="stat-item">
+                                            <i class="bi bi-calendar3"></i>
+                                            {{ vacante.fecha_publicacion|date:"d M Y" }}
+                                        </div>
+                                    </td>
+
+                                    <!-- 3. Cantidad de Postulantes -->
+                                    <td class="text-center">
+                                        <!-- COMENTARIO: Usamos 'num_postulantes' que viene del annotate en la vista 
+                                             (Vacante.objects....annotate(num_postulantes=Count('postulacion'))) -->
+                                        <a href="#" class="btn btn-light btn-sm position-relative border">
+                                            <i class="bi bi-people-fill me-1 text-primary"></i>
+                                            <!-- Usamos vacante.num_postulantes si usaste annotate, 
+                                                 o vacante.postulacion_set.count si no -->
+                                            <span class="fw-bold">{{ vacante.num_postulantes|default:vacante.postulacion_set.count }}</span>
+                                            
+                                            {% if vacante.postulacion_set.count > 0 %}
+                                                <span class="position-absolute top-0 start-100 translate-middle p-1 bg-danger border border-light rounded-circle">
+                                                    <span class="visually-hidden">Nuevos</span>
+                                                </span>
+                                            {% endif %}
+                                        </a>
+                                    </td>
+
+                                    <!-- 4. Estatus (Badge Visual) -->
+                                    <td class="text-center">
+                                        {% if vacante.activa %}
+                                            <span class="badge bg-success bg-opacity-10 text-success border border-success status-badge">
+                                                <i class="bi bi-check-circle me-1"></i>Activa
+                                            </span>
+                                        {% else %}
+                                            <span class="badge bg-secondary bg-opacity-10 text-secondary border border-secondary status-badge">
+                                                <i class="bi bi-pause-circle me-1"></i>Pausada
+                                            </span>
+                                        {% endif %}
+                                    </td>
+
+                                    <!-- 5. Botones de Acción -->
+                                    <td class="text-end pe-4">
+                                        <div class="d-flex justify-content-end gap-2">
+                                            <!-- Formulario Toggle Status -->
+                                            <!-- COMENTARIO: Asegúrate de tener la URL 'toggle_status' definida en urls.py -->
+                                            <form action="{% url 'status_change' vacante.id %}" method="POST">
+                                                {% csrf_token %}
+                                                {% if vacante.activa %}
+                                                    <button type="submit" class="btn btn-outline-danger btn-sm" title="Pausar publicación">
+                                                        <i class="bi bi-power"></i> Desactivar
+                                                    </button>
+                                                {% else %}
+                                                    <button type="submit" class="btn btn-outline-success btn-sm" title="Reactivar publicación">
+                                                        <i class="bi bi-send"></i> Publicar
+                                                    </button>
+                                                {% endif %}
+                                            </form>
+                                            
+                                            <!-- Botón Editar (Solo visual por ahora) -->
+                                            <a href="/empresas/editar-vacante/{{vacante.id}}" class="btn btn-light btn-sm text-muted" title="Editar detalles">
+                                                <i class="bi bi-pencil"></i>
+                                            </a>
+                                        </div>
+                                    </td>
+                                </tr>
+                                {% empty %}
+                                <!-- Estado Vacío (Empty State) -->
+                                <tr>
+                                    <td colspan="5" class="text-center py-5">
+                                        <div class="text-muted">
+                                            <i class="bi bi-inbox fs-1 d-block mb-3 opacity-50"></i>
+                                            <h4>No tienes vacantes publicadas aún</h4>
+                                            <p>¡Es momento de encontrar al candidato ideal!</p>
+                                            <a href="{% url 'crear_vacante' %}" class="btn btn-primary mt-2">
+                                                Publicar mi primera vacante
+                                            </a>
+                                        </div>
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+{% endblock %}
+
+<!-- 5. SCRIPTS EXTRA: Si necesitaras JS específico para esta tabla, iría aquí. -->
+{% block extra_js %}
+    <!-- Por ahora no necesitamos scripts adicionales aquí -->
+{% endblock %}

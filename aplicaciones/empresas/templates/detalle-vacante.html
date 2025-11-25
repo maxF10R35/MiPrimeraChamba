@@ -1,11 +1,261 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Document</title>
-</head>
-<body>
-    <h1> Aqui se muestra el detalle de la vacante numero: {{vacante_id}} </h1>
-</body>
-</html>
+{% extends 'marco.html' %}
+
+{% block title %}Detalle de Vacante | {{ vacante.nombre_puesto }}{% endblock %}
+
+{% block extra_css %}
+    <style>
+        /* Header Vacante */
+        .vacante-header { 
+            background: white; 
+            padding: 25px; 
+            border-radius: 12px; 
+            margin-bottom: 25px; 
+            box-shadow: 0 2px 15px rgba(0,0,0,0.03); 
+        }
+        .badge-status { 
+            font-size: 0.9rem; 
+            padding: 6px 12px; 
+            border-radius: 20px; 
+        }
+        
+        /* Tabs */
+        .nav-tabs { border-bottom: 2px solid #e9ecef; }
+        .nav-link { color: #6c757d; font-weight: 600; border: none; padding: 12px 20px; }
+        .nav-link.active { color: #0d6efd; border-bottom: 2px solid #0d6efd; background: transparent; }
+        
+        /* Candidatos Card */
+        .candidate-card { 
+            transition: transform 0.2s; 
+            border: 1px solid #e9ecef; 
+            border-radius: 10px; 
+            margin-bottom: 15px; 
+            background: white; 
+        }
+        .candidate-card:hover { 
+            transform: translateY(-3px); 
+            box-shadow: 0 5px 15px rgba(0,0,0,0.05); 
+            border-color: #dee2e6; 
+        }
+        .compatibility-score { font-size: 1.2rem; font-weight: 800; }
+        .progress-thin { height: 6px; border-radius: 3px; background-color: #e9ecef; }
+        
+        /* Detalles */
+        .detail-section { 
+            background: white; 
+            padding: 25px; 
+            border-radius: 12px; 
+            margin-bottom: 20px; 
+        }
+        .req-tag { 
+            background: #e7f1ff; 
+            color: #0d6efd; 
+            padding: 4px 10px; 
+            border-radius: 15px; 
+            font-size: 0.85rem; 
+            display: inline-block; 
+            margin: 2px; 
+        }
+        
+        /* Listas limpias */
+        .clean-list li {
+            margin-bottom: 8px;
+        }
+    </style>
+{% endblock %}
+
+{% block content %}
+    
+    <!-- Bloque de Mensajes -->
+    {% if messages %}
+        {% for message in messages %}
+            <div class="alert alert-{{ message.tags }} alert-dismissible fade show" role="alert">
+                {{ message }}
+                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+            </div>
+        {% endfor %}
+    {% endif %}
+
+    <!-- Header de la Vacante -->
+    <div class="vacante-header d-flex justify-content-between align-items-start flex-wrap gap-3">
+        <div>
+            <div class="d-flex align-items-center gap-3 mb-2">
+                <h2 class="fw-bold mb-0 text-dark">{{ vacante.nombre_puesto }}</h2>
+                
+                {% if vacante.activa %}
+                    <span class="badge bg-success bg-opacity-10 text-success border border-success badge-status">
+                        <i class="bi bi-check-circle me-1"></i>Activa
+                    </span>
+                {% else %}
+                    <span class="badge bg-secondary bg-opacity-10 text-secondary border border-secondary badge-status">
+                        <i class="bi bi-pause-circle me-1"></i>Inactiva
+                    </span>
+                {% endif %}
+            </div>
+            
+            <div class="text-muted mb-3">
+                <i class="bi bi-geo-alt me-2"></i>{{ vacante.ubicacion }} &bull; 
+                <i class="bi bi-cash me-2 ms-2"></i>${{ vacante.salario }} &bull;
+                <i class="bi bi-clock me-2 ms-2"></i>{{ vacante.tipo_contrato }}
+            </div>
+
+            <!-- Etiquetas de la Vacante (Procesadas en View) -->
+            <div class="d-flex gap-2 flex-wrap">
+                {% for tag_nombre in lista_etiquetas %} 
+                    <span class="req-tag"><i class="bi bi-tag-fill me-1"></i>{{ tag_nombre }}</span>
+                {% empty %}
+                    <small class="text-muted">Sin etiquetas</small>
+                {% endfor %}
+            </div>
+        </div>
+        
+        <div class="d-flex gap-2">
+            <!-- Formulario para Toggle Status -->
+            <form action="{% url 'status_change' vacante.id %}" method="POST">
+                {% csrf_token %}
+                {% if vacante.activa %}
+                    <button type="submit" class="btn btn-outline-danger" title="Desactivar Vacante">
+                        <i class="bi bi-power me-2"></i>Desactivar
+                    </button>
+                {% else %}
+                    <button type="submit" class="btn btn-outline-success" title="Reactivar Vacante">
+                        <i class="bi bi-send me-2"></i>Publicar
+                    </button>
+                {% endif %}
+            </form>
+            
+            <a href="/empresas/editar-vacante/{{vacante.id}}" class="btn btn-primary">
+                <i class="bi bi-pencil me-2"></i>Editar Vacante
+            </a>
+        </div>
+    </div>
+
+    <!-- Navegación de Pestañas -->
+    <ul class="nav nav-tabs mb-4" id="vacanteTabs" role="tablist">
+        <li class="nav-item" role="presentation">
+            <button class="nav-link active" id="candidatos-tab" data-bs-toggle="tab" data-bs-target="#candidatos" type="button" role="tab">
+                <i class="bi bi-people me-2"></i>Candidatos ({{ postulaciones.count }})
+            </button>
+        </li>
+        <li class="nav-item" role="presentation">
+            <button class="nav-link" id="detalles-tab" data-bs-toggle="tab" data-bs-target="#detalles" type="button" role="tab">
+                <i class="bi bi-file-text me-2"></i>Detalles del Puesto
+            </button>
+        </li>
+    </ul>
+
+    <!-- Contenido de Pestañas -->
+    <div class="tab-content" id="vacanteTabsContent">
+        
+        <!-- TAB 1: LISTA DE CANDIDATOS -->
+        <div class="tab-pane fade show active" id="candidatos" role="tabpanel">
+            
+            {% for post in postulaciones %}
+                <div class="candidate-card p-3">
+                    <div class="row align-items-center">
+                        <!-- Avatar / Iniciales -->
+                        <div class="col-md-1 text-center">
+                            <div class="bg-light rounded-circle d-inline-flex align-items-center justify-content-center text-primary fw-bold fs-4 shadow-sm" style="width: 60px; height: 60px;">
+                                {{ post.trabajador.nombre|slice:":1" }}{{ post.trabajador.apellido_p|slice:":1" }}
+                            </div>
+                        </div>
+                        
+                        <!-- Info Personal -->
+                        <div class="col-md-4">
+                            <h5 class="fw-bold mb-1">{{ post.trabajador.nombre }} {{ post.trabajador.apellido_p }}</h5>
+                            <p class="text-muted mb-1 small text-uppercase fw-bold">{{ post.trabajador.titulo|default:"Sin título especificado" }}</p>
+                            <small class="text-muted"><i class="bi bi-calendar3 me-1"></i>Postulado: {{ post.fecha_postulacion|date:"d M Y" }}</small>
+                        </div>
+                        
+                        <!-- Compatibilidad (Fit) -->
+                        <div class="col-md-3 text-center">
+                            <!-- Usamos 'porcentaje_fit' calculado en la vista -->
+                            {% with score=post.porcentaje_fit %}
+                                <div class="d-flex align-items-center justify-content-center gap-2 mb-1">
+                                    <span class="compatibility-score {% if score >= 85 %}text-success{% elif score >= 50 %}text-warning{% else %}text-danger{% endif %}">
+                                        {{ score }}%
+                                    </span>
+                                    <small class="text-muted">Compatibilidad</small>
+                                </div>
+                                <div class="progress progress-thin">
+                                    <div class="progress-bar {% if score >= 85 %}bg-success{% elif score >= 50 %}bg-warning{% else %}bg-danger{% endif %}" 
+                                         role="progressbar" 
+                                         style="width: {{ score }}%">
+                                    </div>
+                                </div>
+                            {% endwith %}
+                        </div>
+                        
+                        <!-- Botones de Acción -->
+                        <div class="col-md-4 text-end">
+                            <a href="#" class="btn btn-sm btn-outline-primary me-2" title="Ver perfil completo">
+                                <i class="bi bi-eye me-1"></i>Ver Perfil
+                            </a>
+                            <a href="mailto:{{ post.trabajador.usuario.email }}" class="btn btn-sm btn-primary" title="Enviar correo">
+                                <i class="bi bi-envelope me-1"></i>Contactar
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            {% empty %}
+                <div class="text-center py-5 text-muted">
+                    <i class="bi bi-person-x fs-1 opacity-50"></i>
+                    <p class="mt-3">Aún no hay candidatos postulados para esta vacante.</p>
+                </div>
+            {% endfor %}
+
+        </div>
+
+        <!-- TAB 2: DETALLES DE LA VACANTE -->
+        <div class="tab-pane fade" id="detalles" role="tabpanel">
+            <div class="row">
+                <div class="col-md-8">
+                    <div class="detail-section">
+                        <h5 class="fw-bold text-primary mb-3">Descripción del Puesto</h5>
+                        <p class="text-muted" style="white-space: pre-line;">{{ vacante.descripcion }}</p>
+                        
+                        <h5 class="fw-bold text-primary mt-4 mb-3">Requisitos</h5>
+                        <!-- Iteramos sobre la lista ya limpia -->
+                        {% if lista_requisitos %}
+                            <ul class="text-muted ps-3 clean-list">
+                                {% for req in lista_requisitos %}
+                                    {% if req|length > 0 %} <!-- Filtro por si hay strings vacíos -->
+                                        <li>{{ req }}</li>
+                                    {% endif %}
+                                {% endfor %}
+                            </ul>
+                        {% else %}
+                            <p class="text-muted">No especificados.</p>
+                        {% endif %}
+
+                        <h5 class="fw-bold text-primary mt-4 mb-3">Prestaciones</h5>
+                        {% if lista_prestaciones %}
+                            <ul class="text-muted ps-3 clean-list">
+                                {% for pres in lista_prestaciones %}
+                                    {% if pres|length > 0 %}
+                                        <li>{{ pres }}</li>
+                                    {% endif %}
+                                {% endfor %}
+                            </ul>
+                        {% else %}
+                            <p class="text-muted">No especificadas.</p>
+                        {% endif %}
+                    </div>
+                </div>
+                
+                <div class="col-md-4">
+                    <div class="detail-section">
+                        <h6 class="fw-bold text-dark mb-3">Información Adicional</h6>
+                        <ul class="list-unstyled text-muted small">
+                            <li class="mb-2"><i class="bi bi-calendar-event me-2"></i>Publicada: {{ vacante.fecha_publicacion|date:"d M Y" }}</li>
+                            <!-- Usamos 'nombre_area_sinco' procesado en la vista -->
+                            <li class="mb-2"><i class="bi bi-building me-2"></i>Área: {{ nombre_area_sinco }}</li>
+                            <li class="mb-2"><i class="bi bi-clock-history me-2"></i>Horario: {{ vacante.horario }}</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+    </div>
+
+{% endblock %}

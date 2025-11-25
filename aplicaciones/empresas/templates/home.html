@@ -234,7 +234,7 @@
                 <div class="card-actions">
                     <a href="/empresas/detalle-vacante/{{vacante.id}}" class="btn btn-detalle">Detalle</a>
                     <a href="/empresas/editar-vacante/{{vacante.id}}" class="btn btn-editar">Editar</a>
-                    <a href="#" class="btn btn-desactivar">Desactivar</a>
+                    <a href="{% url 'status_change' vacante.id %}" class="btn btn-desactivar">Desactivar</a>
                 </div>
             </div>
             {% endfor %}

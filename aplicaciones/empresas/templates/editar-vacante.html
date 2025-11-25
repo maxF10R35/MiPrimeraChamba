@@ -1,11 +1,319 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="es">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Document</title>
+    <title>Editar Vacante | {{ vacante.nombre_puesto }}</title>
+    
+    <!-- Bootstrap 5 CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Iconos -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css">
+
+    <style>
+        body { background-color: #f8f9fa; font-family: 'Segoe UI', sans-serif; }
+        .form-section { background: white; padding: 25px; border-radius: 12px; box-shadow: 0 4px 15px rgba(0,0,0,0.05); margin-bottom: 25px; }
+        .section-title { color: #0d6efd; font-weight: 700; border-bottom: 2px solid #e9ecef; padding-bottom: 10px; margin-bottom: 20px; }
+        
+        /* Estilos Listas Dinámicas */
+        .dynamic-list-container { border: 1px solid #ced4da; border-radius: 6px; padding: 10px; min-height: 50px; display: flex; flex-wrap: wrap; gap: 5px; background: #fff; }
+        .dynamic-item { background-color: #fff3cd; color: #856404; border: 1px solid #ffeeba; padding: 5px 12px; border-radius: 20px; font-size: 0.9rem; display: flex; align-items: center; }
+        .dynamic-item .remove-btn { margin-left: 8px; cursor: pointer; font-weight: bold; opacity: 0.6; }
+        .dynamic-item .remove-btn:hover { opacity: 1; }
+        .input-transparent { border: none; outline: none; flex-grow: 1; min-width: 150px; }
+
+        /* Estilos Etiquetas */
+        .tag-category-title { font-size: 0.85rem; font-weight: 700; color: #6c757d; text-transform: uppercase; margin-top: 15px; margin-bottom: 8px; }
+        .tag-btn { border-radius: 50px; padding: 5px 12px; font-size: 0.85rem; border: 1px solid #dee2e6; background-color: #fff; color: #495057; margin-bottom: 6px; margin-right: 4px; cursor: pointer; transition: all 0.2s; }
+        .tag-btn:hover { background-color: #e9ecef; }
+        .tag-btn.active { background-color: #0d6efd; color: white; border-color: #0d6efd; }
+        
+        /* Aviso Importante */
+        .warning-box { border-left: 4px solid #ffc107; background-color: #fff3cd; padding: 15px; border-radius: 4px; color: #856404; margin-bottom: 20px; }
+    </style>
 </head>
 <body>
-    <h1> Pantalla para editar la vacante con numero: {{vacante_id}} </h1>
+
+    <!-- Navbar Simple -->
+    <nav class="navbar navbar-light bg-white shadow-sm mb-4">
+        <div class="container">
+            <span class="navbar-brand fw-bold text-primary"><i class="bi bi-briefcase-fill me-2"></i>Tu Primera Chamba</span>
+            <!-- Ajusta el enlace de volver según tus necesidades -->
+            <a href="{% url 'home' %}" class="btn btn-outline-secondary btn-sm">Cancelar y Volver</a>
+        </div>
+    </nav>
+
+    <div class="container pb-5">
+        <div class="row justify-content-center">
+            <div class="col-lg-10">
+                
+                <div class="d-flex justify-content-between align-items-center mb-4">
+                    <h2 class="fw-bold mb-0">Editar Vacante</h2>
+                </div>
+
+                <div class="warning-box">
+                    <i class="bi bi-exclamation-triangle-fill me-2"></i>
+                    <strong>Advertencia:</strong> Modificar esta vacante reiniciará el proceso de selección. 
+                    Todas las postulaciones actuales ({{ vacante.postulacion_set.count }}) serán eliminadas permanentemente.
+                </div>
+
+                <!-- Formulario con confirmación JS -->
+                <form method="POST" action="" id="editarVacanteForm" onsubmit="return confirmUpdate()">
+                    {% csrf_token %}
+
+                    <!-- SECCIÓN 1: Detalles Generales -->
+                    <div class="form-section">
+                        <h4 class="section-title"><i class="bi bi-pencil-square me-2"></i>Datos Generales</h4>
+                        
+                        <div class="row g-3">
+                            <div class="col-md-12">
+                                <label class="form-label fw-bold">Nombre del Puesto</label>
+                                <input type="text" class="form-control" name="nombre_puesto" value="{{ vacante.nombre_puesto }}" required>
+                            </div>
+                            
+                            <div class="col-md-6">
+                                <label class="form-label fw-bold">Salario Mensual ($)</label>
+                                <input type="number" class="form-control" name="salario" value="{{ vacante.salario|stringformat:'f' }}" step="0.01" required>
+                            </div>
+                            
+                            <div class="col-md-6">
+                                <label class="form-label fw-bold">Tipo de Contrato</label>
+                                <select class="form-select" name="tipo_contrato" id="contratoSelect" required>
+                                    <option value="Tiempo Completo">Tiempo Completo</option>
+                                    <option value="Medio Tiempo">Medio Tiempo</option>
+                                    <option value="Por Proyecto">Por Proyecto</option>
+                                    <option value="Prácticas">Prácticas Profesionales</option>
+                                </select>
+                            </div>
+
+                            <div class="col-md-6">
+                                <label class="form-label fw-bold">Horario</label>
+                                <input type="text" class="form-control" name="horario" value="{{ vacante.horario }}" required>
+                            </div>
+
+                            <div class="col-md-6">
+                                <label class="form-label fw-bold">Ubicación</label>
+                                <input type="text" class="form-control" name="ubicacion" value="{{ vacante.ubicacion }}" required>
+                            </div>
+
+                            <div class="col-12">
+                                <label class="form-label fw-bold">Descripción General</label>
+                                <textarea class="form-control" name="descripcion" rows="5" required>{{ vacante.descripcion }}</textarea>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- SECCIÓN 2: Requisitos y Prestaciones -->
+                    <div class="form-section">
+                        <h4 class="section-title"><i class="bi bi-list-check me-2"></i>Requisitos y Oferta</h4>
+                        
+                        <div class="mb-4">
+                            <label class="form-label fw-bold">Requisitos</label>
+                            <div class="dynamic-list-container" id="reqContainer">
+                                <input type="text" class="input-transparent" id="reqInput" placeholder="Añadir nuevo requisito...">
+                            </div>
+                            <button type="button" class="btn btn-sm btn-outline-warning mt-2" onclick="addItem('req')">+ Agregar</button>
+                            <input type="hidden" name="requisitos" id="requisitosFinal" value="{{ vacante.requisitos }}">
+                        </div>
+
+                        <div class="mb-3">
+                            <label class="form-label fw-bold">Prestaciones</label>
+                            <div class="dynamic-list-container" id="presContainer">
+                                <input type="text" class="input-transparent" id="presInput" placeholder="Añadir nueva prestación...">
+                            </div>
+                            <button type="button" class="btn btn-sm btn-outline-warning mt-2" onclick="addItem('pres')">+ Agregar</button>
+                            <input type="hidden" name="prestaciones" id="prestacionesFinal" value="{{ vacante.prestaciones }}">
+                        </div>
+                    </div>
+
+                    <!-- SECCIÓN 3: Categorización SINCO -->
+                    <div class="form-section">
+                        <h4 class="section-title"><i class="bi bi-diagram-3 me-2"></i>Clasificación (SINCO)</h4>
+                        <div class="alert alert-secondary py-2 small">
+                            <i class="bi bi-info-circle me-1"></i> Selección actual: <strong id="currentSincoText">Cargando...</strong>. Modifica abajo solo si deseas cambiarla.
+                        </div>
+
+                        <div class="row g-3">
+                            <div class="col-md-4">
+                                <label class="form-label small text-muted">1. División</label>
+                                <select class="form-select" id="sinco_div"><option value="" disabled selected>Selecciona...</option></select>
+                            </div>
+                            <div class="col-md-4">
+                                <label class="form-label small text-muted">2. Grupo</label>
+                                <select class="form-select" id="sinco_gpo" disabled><option value="" disabled selected>---</option></select>
+                            </div>
+                            <div class="col-md-4">
+                                <label class="form-label fw-bold">3. Subgrupo</label>
+                                <select class="form-select border-warning" id="sinco_sub" disabled><option value="" disabled selected>---</option></select>
+                            </div>
+                        </div>
+                        <!-- Mantenemos el valor original si no se toca el selector -->
+                        <input type="hidden" name="area_ocupacion" id="areaOcupacionFinal" value="{{ vacante.area_ocupacion }}">
+                    </div>
+
+                    <!-- SECCIÓN 4: Etiquetas -->
+                    <div class="form-section">
+                        <h4 class="section-title"><i class="bi bi-tags me-2"></i>Etiquetas</h4>
+                        <div id="tagsWrapper"></div>
+                        <input type="hidden" name="etiquetas" id="etiquetasFinal" value="{{ vacante.etiquetas }}">
+                    </div>
+
+                    <div class="d-grid gap-2 mb-5">
+                        <button type="submit" class="btn btn-warning btn-lg shadow fw-bold text-dark">
+                            <i class="bi bi-save me-2"></i>Guardar Cambios
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- Bootstrap JS -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+
+    <script>
+        // 1. DATOS INICIALES (Mock data para preview, cambia a Django tags en prod)
+        const SINCO = JSON.parse('{{ sinco_json|escapejs }}');
+        const TAGS = JSON.parse('{{ tags_json|escapejs }}');
+        
+        // --- MOCK DATA START (BORRAR EN PROD) ---
+        //const SINCO = { '1': {'nombre': 'Funcionarios', 'grupos': {'11': {'nombre': 'Altas Autoridades', 'subgrupos': {'111': 'Legisladores'}}}}, '2': {'nombre': 'Profesionistas', 'grupos': {'22': {'nombre': 'Ingenierías', 'subgrupos': {'226': 'Ing. Civil'}}}} };
+        //const TAGS = { '1': {'nombre': 'Sector', 'etiquetas': {'11': {'nombre': 'Tecnología'}, '13': {'nombre': 'Finanzas'}}} };
+        // --- MOCK DATA END ---
+
+        // Valores actuales de la BD
+        const currentContract = "{{ vacante.tipo_contrato }}";
+        const currentAreaId = "{{ vacante.area_ocupacion }}";
+        
+        // 2. INICIALIZAR SELECTS SIMPLES
+        document.getElementById('contratoSelect').value = currentContract;
+
+        // 3. LOGICA LISTAS DINAMICAS (Recuperar valores)
+        const lists = {
+            'req': { items: [], container: document.getElementById('reqContainer'), input: document.getElementById('reqInput'), hidden: document.getElementById('requisitosFinal') },
+            'pres': { items: [], container: document.getElementById('presContainer'), input: document.getElementById('presInput'), hidden: document.getElementById('prestacionesFinal') }
+        };
+
+        // Función para cargar datos iniciales desde el string "A|||B|||C"
+        function initList(type) {
+            const rawVal = lists[type].hidden.value;
+            if(rawVal) {
+                lists[type].items = rawVal.split('|||').filter(x => x); // filter limpia vacíos
+                renderList(type);
+            }
+        }
+
+        function addItem(type) {
+            const text = lists[type].input.value.trim();
+            if (!text) return;
+            lists[type].items.push(text);
+            renderList(type);
+            lists[type].input.value = ''; lists[type].input.focus();
+        }
+
+        function removeItem(type, index) {
+            lists[type].items.splice(index, 1);
+            renderList(type);
+        }
+
+        function renderList(type) {
+            const config = lists[type];
+            const inputEl = config.input;
+            config.container.innerHTML = '';
+            config.items.forEach((text, index) => {
+                const div = document.createElement('div');
+                div.className = 'dynamic-item';
+                div.innerHTML = `${text} <span class="remove-btn" onclick="removeItem('${type}', ${index})">&times;</span>`;
+                config.container.appendChild(div);
+            });
+            config.container.appendChild(inputEl);
+            config.hidden.value = config.items.join('|||');
+        }
+
+        // Inicializar listas
+        initList('req');
+        initList('pres');
+
+        // Listeners Enter
+        ['req', 'pres'].forEach(type => {
+            lists[type].input.addEventListener('keydown', (e) => {
+                if(e.key === 'Enter') { e.preventDefault(); addItem(type); }
+            });
+        });
+
+        // 4. LOGICA SINCO (Pre-llenado inteligente)
+        const sDiv = document.getElementById('sinco_div');
+        const sGpo = document.getElementById('sinco_gpo');
+        const sSub = document.getElementById('sinco_sub');
+        const areaHidden = document.getElementById('areaOcupacionFinal');
+        const currentText = document.getElementById('currentSincoText');
+
+        // Llenar divisiones
+        for (const [k, v] of Object.entries(SINCO)) sDiv.add(new Option(`${k} - ${v.nombre}`, k));
+
+        // Intentar encontrar el camino del ID actual para mostrarlo
+        let foundPath = null;
+        for (const [dk, dv] of Object.entries(SINCO)) {
+            for (const [gk, gv] of Object.entries(dv.grupos)) {
+                if (gv.subgrupos[currentAreaId]) {
+                    currentText.textContent = `${currentAreaId} - ${gv.subgrupos[currentAreaId]}`;
+                    // Opcional: Podríamos pre-seleccionar los dropdowns aquí, 
+                    // pero a veces es mejor dejarlos limpios para obligar a una selección consciente si quieren cambiarlo.
+                    break;
+                }
+            }
+        }
+
+        // Listeners Cascada (Igual que crear)
+        sDiv.addEventListener('change', function() {
+            sGpo.innerHTML = '<option disabled selected>Selecciona...</option>'; sSub.innerHTML = '<option disabled selected>---</option>'; sSub.disabled = true;
+            for(const [k, v] of Object.entries(SINCO[this.value].grupos)) sGpo.add(new Option(`${k} - ${v.nombre}`, k));
+            sGpo.disabled = false;
+        });
+        sGpo.addEventListener('change', function() {
+            sSub.innerHTML = '<option disabled selected>Selecciona...</option>';
+            for(const [k, v] of Object.entries(SINCO[sDiv.value].grupos[this.value].subgrupos)) sSub.add(new Option(`${k} - ${v}`, k));
+            sSub.disabled = false;
+        });
+        sSub.addEventListener('change', function() {
+            areaHidden.value = this.value; // Solo actualizamos si el usuario selecciona algo nuevo
+        });
+
+        // 5. LOGICA ETIQUETAS (Pre-seleccionado)
+        const tagsWrapper = document.getElementById('tagsWrapper');
+        const tagsHidden = document.getElementById('etiquetasFinal');
+        // Inicializar Set con los valores actuales "11,13" -> Set(11, 13)
+        const initialTags = tagsHidden.value ? tagsHidden.value.split(',') : [];
+        const selectedTags = new Set(initialTags);
+
+        for (const [catKey, catData] of Object.entries(TAGS)) {
+            const title = document.createElement('div');
+            title.className = 'tag-category-title'; title.textContent = catData.nombre;
+            tagsWrapper.appendChild(title);
+            const btnContainer = document.createElement('div');
+            
+            for (const [tagKey, tagData] of Object.entries(catData.etiquetas)) {
+                const btn = document.createElement('button');
+                btn.type = 'button';
+                btn.className = 'tag-btn ' + (selectedTags.has(tagKey) ? 'active' : ''); // Pre-activar
+                btn.textContent = tagData.nombre;
+                btn.dataset.id = tagKey;
+                
+                btn.addEventListener('click', function() {
+                    if (selectedTags.has(tagKey)) { selectedTags.delete(tagKey); this.classList.remove('active'); } 
+                    else { selectedTags.add(tagKey); this.classList.add('active'); }
+                    tagsHidden.value = Array.from(selectedTags).join(',');
+                });
+                btnContainer.appendChild(btn);
+            }
+            tagsWrapper.appendChild(btnContainer);
+        }
+
+        // 6. CONFIRMACIÓN FINAL
+        function confirmUpdate() {
+            return confirm("ADVERTENCIA IMPORTANTE:\n\nAl guardar los cambios en esta vacante, TODAS las postulaciones y candidatos asociados serán eliminados permanentemente, ya que los requisitos del puesto han cambiado.\n\n¿Estás seguro de que deseas continuar?");
+        }
+
+    </script>
 </body>
 </html>

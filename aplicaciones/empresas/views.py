@@ -150,7 +150,7 @@ def historial_vacantes(request):
     except Empresa.DoesNotExist:
         vacantes = []
 
-    return render(request, 'historial.html', {'vacantes': vacantes})
+    return render(request, 'historial_v2.html', {'vacantes': vacantes})
 
 
 
@@ -206,32 +206,167 @@ def agregar_vacante(request):
 
 @login_required
 def detalle_vacante(request, id):
-    return render(request, 'detalle-vacante.html', {'vacante_id': id})
+    # 1. Obtener la vacante asegurando que sea de la empresa actual
+    vacante = get_object_or_404(Vacante, id=id, empresa=request.user.empresa)
+    
+    # 2. Obtener postulaciones
+    postulaciones = Postulacion.objects.filter(vacante=vacante).order_by('-compatibilidad')
+
+    # --- PROCESAMIENTO DE DATOS PARA LA VISTA ---
+
+    # A) SINCO: Buscar el nombre del subgrupo
+    nombre_area = "No especificada"
+    area_id = str(vacante.area_ocupacion) # Convertimos a string para buscar en el dict
+    
+    # Recorremos el diccionario SINCO para encontrar el ID
+    found = False
+    for div_id, div_data in SINCO.items():
+        if found: break
+        for grupo_id, grupo_data in div_data.get('grupos', {}).items():
+            subgrupos = grupo_data.get('subgrupos', {})
+            if area_id in subgrupos:
+                nombre_area = subgrupos[area_id] # ¡Encontrado!
+                found = True
+                break
+
+    # B) ETIQUETAS: Convertir IDs "11,36" a Nombres "Tecnología, Trabajo en equipo"
+    nombres_etiquetas = []
+    if vacante.etiquetas:
+        ids_tags = vacante.etiquetas.split(',')
+        # Recorremos VACANTE_TAGS para buscar cada ID
+        for tag_id in ids_tags:
+            for cat_id, cat_data in VACANTE_TAGS.items():
+                mis_etiquetas = cat_data.get('etiquetas', {})
+                if tag_id in mis_etiquetas:
+                    nombres_etiquetas.append(mis_etiquetas[tag_id]['nombre'])
+                    break # Pasamos al siguiente tag_id
+
+    # C) REQUISITOS Y PRESTACIONES: Separar por '|||'
+    # Creamos listas limpias para iterar fácil en el HTML
+    lista_requisitos = vacante.requisitos.split('|||') if vacante.requisitos else []
+    lista_prestaciones = vacante.prestaciones.split('|||') if vacante.prestaciones else []
+
+    # D) COMPATIBILIDAD: Ajustar a porcentaje (0-100)
+    # No guardamos en BD, solo modificamos los objetos en memoria para esta vista
+    for post in postulaciones:
+        if post.compatibilidad:
+            post.porcentaje_fit = int(post.compatibilidad * 100)
+        else:
+            post.porcentaje_fit = 0
+
+    context = {
+        'vacante': vacante,
+        'postulaciones': postulaciones,
+        'nombre_area_sinco': nombre_area,     # Dato procesado A
+        'lista_etiquetas': nombres_etiquetas, # Dato procesado B
+        'lista_requisitos': lista_requisitos, # Dato procesado C
+        'lista_prestaciones': lista_prestaciones # Dato procesado C
+    }
+    
+    return render(request, 'detalle-vacante.html', context)
 
 
 
 @login_required
 def editar_vacante(request, vacante_id):
-   return render(request, 'editar-vacante.html', {'vacante_id': vacante_id})
+    # 1. Obtener vacante y validar propiedad
+    vacante = get_object_or_404(Vacante, id=vacante_id, empresa=request.user.empresa)
+
+    if request.method == 'POST':
+        try:
+            # 2. Actualizar campos básicos
+            vacante.nombre_puesto = request.POST.get('nombre_puesto')
+            vacante.salario = request.POST.get('salario')
+            vacante.tipo_contrato = request.POST.get('tipo_contrato')
+            vacante.horario = request.POST.get('horario')
+            vacante.ubicacion = request.POST.get('ubicacion')
+            vacante.descripcion = request.POST.get('descripcion')
+            
+            # 3. Actualizar campos complejos (Listas y Tags)
+            vacante.requisitos = request.POST.get('requisitos') # Viene separado por |||
+            vacante.prestaciones = request.POST.get('prestaciones') # Viene separado por |||
+            vacante.etiquetas = request.POST.get('etiquetas') # Viene separado por comas
+            
+            # 4. Actualizar SINCO (Solo si el usuario seleccionó uno nuevo, si no, mantenemos el anterior)
+            nuevo_sinco = request.POST.get('area_ocupacion')
+            if nuevo_sinco:
+                vacante.area_ocupacion = nuevo_sinco
+
+            # 5. BORRADO DE POSTULACIONES (Regla de Negocio)
+            # Al cambiar los requisitos, los candidatos actuales pierden validez.
+            count_deleted, _ = vacante.postulacion_set.all().delete()
+            
+            # Resetear contador de postulaciones en el modelo Vacante (si lo usas desnormalizado)
+            vacante.postulaciones_count = 0 
+            
+            vacante.save()
+
+            if count_deleted > 0:
+                messages.warning(request, f"Vacante actualizada. Se eliminaron {count_deleted} postulaciones antiguas debido a los cambios.")
+            else:
+                messages.success(request, "Vacante actualizada exitosamente.")
+                
+            return redirect(f'/empresas/detalle-vacante/{vacante.id}')
+
+        except Exception as e:
+            messages.error(request, f"Error al actualizar: {str(e)}")
+    
+    # GET: Preparamos datos para pre-llenar el formulario
+    context = {
+        'vacante': vacante,
+        'sinco_json': json.dumps(SINCO),
+        'tags_json': json.dumps(VACANTE_TAGS)
+    }
+    return render(request, 'editar-vacante.html', context)
 
 
 
 @login_required
 def cambio_estatus(request, vacante_id):
-    if request.method == 'POST':
-        # Aseguramos que la vacante pertenezca a la empresa del usuario (Seguridad)
-        vacante = get_object_or_404(Vacante, id=vacante_id, empresa=request.user.empresa)
+    #if request.method == 'POST':
+    # Aseguramos que la vacante pertenezca a la empresa del usuario (Seguridad)
+    vacante = get_object_or_404(Vacante, id=vacante_id, empresa=request.user.empresa)
         
-        # Invertimos el valor (Si es True pasa a False, y viceversa)
-        # NOTA: Esto asume que agregaste 'activa = models.BooleanField(default=True)' a tu modelo
-        vacante.activa = not vacante.activa 
-        vacante.save()
+    # Invertimos el valor (Si es True pasa a False, y viceversa)
+    # NOTA: Esto asume que agregaste 'activa = models.BooleanField(default=True)' a tu modelo
+    vacante.activa = not vacante.activa 
+    vacante.save()
         
-        status_msg = "activada" if vacante.activa else "desactivada"
-        messages.success(request, f"La vacante ha sido {status_msg}.")
+    status_msg = "activada" if vacante.activa else "desactivada"
+    messages.success(request, f"La vacante ha sido {status_msg}.")
         
-    return redirect('historial') # Vuelve a la misma tabla
+    return redirect('home') # Vuelve a la misma tabla
 
+
+
+@login_required
+def perfil_empresa(request):
+    try:
+        empresa = request.user.empresa
+    except Empresa.DoesNotExist:
+        return redirect('signup')
+
+    # --- PROCESAMIENTO DE ETIQUETAS (SECTORES) ---
+    # Convertimos los IDs guardados en la BD a nombres legibles
+    nombres_sectores = []
+    if empresa.categoria:
+        ids_sectores = empresa.categoria.split(',')
+        # Accedemos directamente a la sección 1 (Sectores) de VACANTE_TAGS
+        sectores_data = VACANTE_TAGS.get('1', {}).get('etiquetas', {})
+        
+        for sec_id in ids_sectores:
+            if sec_id in sectores_data:
+                nombres_sectores.append(sectores_data[sec_id]['nombre'])
+
+    context = {
+        'empresa': empresa,
+        'lista_sectores': nombres_sectores,
+        # Opcional: Agregamos conteo de vacantes para mostrar actividad
+        'total_vacantes': empresa.vacante_set.count(),
+        'vacantes_activas': empresa.vacante_set.filter(activa=True).count()
+    }
+    
+    return render(request, 'perfil-empresa.html', context)
 
 
 def mostrar_marco(request):
