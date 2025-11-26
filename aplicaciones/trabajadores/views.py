@@ -7,7 +7,8 @@ from django.shortcuts import render, redirect
 from django.contrib import messages
 from django.contrib.auth.models import User
 from .models import Trabajador
-from aplicaciones.empresas.models import Vacante
+from aplicaciones.empresas.models import Vacante, Postulacion
+from django.shortcuts import get_object_or_404
 # Importamos todos tus diccionarios
 from aplicaciones.etiquetas import SINCO, VACANTE_TAGS, GENERO_OPCIONES, NIVEL_ESTUDIOS, TIEMPO_EXPERIENCIA
 
@@ -137,6 +138,44 @@ def home_trabajador(request):
     return render(request, 'home_t.html', context)
 
 
+@login_required
+@trabajador_required
+def ver_detalle_vacante(request, vacante_id):
+    # 1. Obtener vacante activa
+    vacante = get_object_or_404(Vacante, id=vacante_id, activa=True)
+    
+    # 2. Verificar si ya se postuló (Para deshabilitar el botón)
+    ya_postulado = Postulacion.objects.filter(
+        vacante=vacante, 
+        trabajador=request.user.trabajador
+    ).exists()
+
+    # 3. Procesar Etiquetas (IDs -> Nombres)
+    lista_tags = []
+    if vacante.etiquetas:
+        ids = vacante.etiquetas.split(',')
+        for tag_id in ids:
+            for cat_val in VACANTE_TAGS.values():
+                if tag_id in cat_val['etiquetas']:
+                    lista_tags.append(cat_val['etiquetas'][tag_id]['nombre'])
+                    break
+    
+    # 4. Procesar Listas (Requisitos/Prestaciones con |||)
+    requisitos_list = vacante.requisitos.split('|||') if vacante.requisitos else []
+    prestaciones_list = vacante.prestaciones.split('|||') if vacante.prestaciones else []
+
+    # 5. Inicial Empresa
+    inicial_empresa = vacante.empresa.nombre[0].upper() if vacante.empresa else "?"
+
+    context = {
+        'vacante': vacante,
+        'lista_tags': lista_tags,
+        'requisitos_list': requisitos_list, # Lista limpia
+        'prestaciones_list': prestaciones_list, # Lista limpia
+        'inicial_empresa': inicial_empresa,
+        'ya_postulado': ya_postulado
+    }
+    return render(request, 'detalle_vacante_trabajador.html', context)
 
 '''
 

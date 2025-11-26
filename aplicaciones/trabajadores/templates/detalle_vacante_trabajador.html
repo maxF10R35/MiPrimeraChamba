@@ -1,0 +1,212 @@
+{% extends 'base_trabajadores.html' %}
+
+{% block title %}{{ vacante.nombre_puesto }} | Tu Primera Chamba{% endblock %}
+
+{% block extra_css %}
+<style>
+    /* Header Hero */
+    .job-hero {
+        background: white;
+        padding: 40px 0;
+        border-bottom: 1px solid #e9ecef;
+        margin-top: -40px; /* Compensar padding base */
+        margin-bottom: 30px;
+    }
+
+    .company-logo-lg {
+        width: 80px;
+        height: 80px;
+        background-color: #f8f9fa;
+        color: #495057;
+        border-radius: 15px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-weight: 800;
+        font-size: 2.5rem;
+        border: 1px solid #e9ecef;
+    }
+
+    .tag-pill {
+        background-color: #f1f3f5;
+        color: #495057;
+        padding: 5px 15px;
+        border-radius: 20px;
+        font-size: 0.85rem;
+        margin-right: 5px;
+        border: 1px solid #dee2e6;
+        display: inline-block;
+        margin-bottom: 5px;
+    }
+
+    .content-card {
+        background: white;
+        border-radius: 12px;
+        padding: 30px;
+        box-shadow: 0 2px 15px rgba(0,0,0,0.03);
+        margin-bottom: 20px;
+    }
+
+    .section-title {
+        font-weight: 700;
+        color: #212529;
+        margin-bottom: 20px;
+        font-size: 1.1rem;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+    }
+
+    .list-check li {
+        list-style: none;
+        position: relative;
+        padding-left: 25px;
+        margin-bottom: 10px;
+        color: #495057;
+    }
+    .list-check li::before {
+        content: '\F26A'; /* Icono check */
+        font-family: 'bootstrap-icons';
+        position: absolute;
+        left: 0;
+        color: #198754;
+        font-weight: bold;
+    }
+
+    /* Sticky Action Bar */
+    .action-card {
+        background: white;
+        padding: 25px;
+        border-radius: 12px;
+        border: 1px solid #e9ecef;
+        position: sticky;
+        top: 100px;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+
+    </div> <!-- Cierre temporal container base -->
+    
+    <!-- Header Principal Hero -->
+    <div class="job-hero">
+        <div class="container">
+            <div class="d-flex align-items-start gap-4">
+                <!-- Logo Inicial -->
+                <div class="company-logo-lg shadow-sm">
+                    {{ inicial_empresa }}
+                </div>
+                
+                <div class="flex-grow-1">
+                    <h1 class="fw-bold mb-2 text-dark">{{ vacante.nombre_puesto }}</h1>
+                    <div class="text-muted fw-bold mb-3 fs-5">
+                        {{ vacante.empresa.nombre|default:"Empresa Confidencial" }}
+                    </div>
+                    
+                    <div class="d-flex flex-wrap gap-3 text-muted mb-3">
+                        <span><i class="bi bi-geo-alt-fill me-1 text-danger"></i>{{ vacante.ubicacion }}</span>
+                        <span><i class="bi bi-clock-fill me-1 text-primary"></i>{{ vacante.tipo_contrato }}</span>
+                        <span><i class="bi bi-calendar3 me-1"></i>Publicado {{ vacante.fecha_publicacion|timesince }}</span>
+                    </div>
+
+                    <div>
+                        {% for tag in lista_tags %}
+                            <span class="tag-pill">{{ tag }}</span>
+                        {% endfor %}
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="container"> <!-- Reapertura container base -->
+        <div class="row">
+            
+            <!-- Columna Izquierda: Detalles -->
+            <div class="col-lg-8">
+                
+                <!-- Descripción -->
+                <div class="content-card">
+                    <h5 class="section-title">Descripción del Puesto</h5>
+                    <p class="text-muted" style="line-height: 1.7; white-space: pre-line;">
+                        {{ vacante.descripcion }}
+                    </p>
+                </div>
+
+                <!-- Requisitos -->
+                {% if requisitos_list %}
+                <div class="content-card">
+                    <h5 class="section-title text-primary">Requisitos</h5>
+                    <ul class="list-check">
+                        {% for req in requisitos_list %}
+                            {% if req|length > 0 %}
+                                <li>{{ req }}</li>
+                            {% endif %}
+                        {% endfor %}
+                    </ul>
+                </div>
+                {% endif %}
+
+                <!-- Prestaciones -->
+                {% if prestaciones_list %}
+                <div class="content-card">
+                    <h5 class="section-title text-success">Lo que ofrecemos</h5>
+                    <ul class="list-check">
+                        {% for pres in prestaciones_list %}
+                            {% if pres|length > 0 %}
+                                <li>{{ pres }}</li>
+                            {% endif %}
+                        {% endfor %}
+                    </ul>
+                </div>
+                {% endif %}
+
+                <!-- Horario Extra -->
+                <div class="content-card">
+                    <h5 class="section-title">Horario</h5>
+                    <p class="text-muted mb-0"><i class="bi bi-clock me-2"></i>{{ vacante.horario }}</p>
+                </div>
+
+            </div>
+
+            <!-- Columna Derecha: Acción -->
+            <div class="col-lg-4">
+                <div class="action-card shadow-sm">
+                    <div class="text-center mb-4">
+                        <div class="text-muted small text-uppercase fw-bold mb-1">Salario Mensual</div>
+                        <div class="h2 fw-bold text-success">${{ vacante.salario|floatformat:0 }}</div>
+                    </div>
+
+                    <div class="d-grid gap-3">
+                        <!-- Botón de Postulación -->
+                        {% if ya_postulado %}
+                            <button class="btn btn-success btn-lg fw-bold shadow-sm py-3" disabled>
+                                <i class="bi bi-check-circle-fill me-2"></i> Ya te has postulado
+                            </button>
+                        {% else %}
+                            <!-- Formulario para postularse (Crear URL 'postularse') -->
+                            <form action="#" method="POST"></form>
+                                {% csrf_token %}
+                                <button type="submit" class="btn btn-primary btn-lg fw-bold shadow-sm py-3 w-100">
+                                    Postularme Ahora <i class="bi bi-send-fill ms-2"></i>
+                                </button>
+                            </form>
+                        {% endif %}
+                        
+                        <button class="btn btn-outline-secondary fw-bold">
+                            <i class="bi bi-bookmark me-2"></i>Guardar Vacante
+                        </button>
+                    </div>
+
+                    <hr class="my-4">
+
+                    <div class="small text-muted text-center">
+                        <i class="bi bi-shield-check me-1"></i> <strong>Empleo Verificado</strong><br>
+                        Tu postulación se envía directamente a la empresa.
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+{% endblock %}

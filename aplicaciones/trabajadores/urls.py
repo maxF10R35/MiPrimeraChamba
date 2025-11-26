@@ -5,4 +5,5 @@ urlpatterns = [
     path('home_t/', views.home_trabajador, name='home_t'),
     path('registrar_trabajador/', views.registrar_trabajador, name='registrar_trabajador'),
     path('Base/', views.mostrar_base, name='base_trabajadores'),  # Nueva ruta para la base
+    path('detalle_vacante_trabajador/<int:vacante_id>/', views.ver_detalle_vacante, name='detail_vac_trab'),
 ]
