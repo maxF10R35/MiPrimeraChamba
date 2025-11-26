@@ -1,6 +1,7 @@
 from django.shortcuts import render
 from django.http import HttpResponse
 import json
+from decimal import Decimal
 from django.contrib.auth.decorators import login_required
 from aplicaciones.general.decorators import trabajador_required
 from django.shortcuts import render, redirect
@@ -176,6 +177,159 @@ def ver_detalle_vacante(request, vacante_id):
         'ya_postulado': ya_postulado
     }
     return render(request, 'detalle_vacante_trabajador.html', context)
+
+
+
+
+@login_required
+@trabajador_required
+def postularse(request, vacante_id):
+    vacante = get_object_or_404(Vacante, id=vacante_id)
+    trabajador = request.user.trabajador
+    
+    # Verificar si ya existe postulación
+    if Postulacion.objects.filter(vacante=vacante, trabajador=trabajador).exists():
+        messages.warning(request, "Ya te has postulado a esta vacante.")
+        return redirect('home_t')
+
+    # --- MANEJO DEL POST (Procesar Formulario) ---
+    if request.method == 'POST':
+        try:
+            # === 1. OBTENCIÓN DE DATOS ===
+            es_rapida = request.POST.get('es_rapida') == 'true'
+            # A. Datos del Usuario (Depende si es rápida o normal)
+            if es_rapida:
+                # Tomar del perfil
+                u_exp = int(trabajador.ult_exp) if trabajador.ult_exp and trabajador.ult_exp.isdigit() else 0
+                u_hard = trabajador.hard_skills.split(',') if trabajador.hard_skills else []
+                u_soft = trabajador.soft_skills.split(',') if trabajador.soft_skills else []
+                # En rápida, asumimos satisfacción máxima (el usuario quiere el trabajo)
+                satisfaccion_avg = 5
+            else:
+                # Tomar del formulario
+                # Experiencia: Si marcó el check de experiencia específica, usamos esa, si no, la del perfil o 0
+                if request.POST.get('tiene_experiencia_area'):
+                    u_exp = int(request.POST.get('tiempo_experiencia', 0))
+                else:
+                    u_exp = 0 # O podrías usar trabajador.ult_exp como fallback
+                
+                u_hard = request.POST.getlist('hard_skills_selected')
+                u_soft = request.POST.getlist('soft_skills_selected')
+                
+                # Calcular promedio de satisfacción (1-5)
+                s1 = int(request.POST.get('sat_sueldo', 0))
+                s2 = int(request.POST.get('sat_horario', 0))
+                s3 = int(request.POST.get('sat_requisitos', 0))
+                s4 = int(request.POST.get('sat_prestaciones', 0))
+                satisfaccion_avg = (s1 + s2 + s3 + s4) / 4 if (s1+s2+s3+s4) > 0 else 0                
+            
+            # B. Datos de la Vacante (Requeridos)
+            # Nota: Asumimos que agregaste estos campos al modelo Vacante como mencionaste.
+            # Si no tienen valor, usamos defaults para evitar división por cero.
+            
+            # Escolaridad requerida (Asumimos un valor medio '22' Bachillerato si no existe campo)
+            v_esc = int(vacante.escolaridad_minima) 
+            #v_esc = 22 # Placeholder, ajusta según tu modelo real
+            u_esc = int(trabajador.estudios) if trabajador.estudios and trabajador.estudios.isdigit() else 0
+            
+            v_exp = int(vacante.tiempo_experiencia) if hasattr(vacante, 'tiempo_experiencia') and vacante.tiempo_experiencia else 0
+            
+            # Obtener etiquetas requeridas de la vacante (Hard vs Soft)
+            v_tags = vacante.etiquetas.split(',') if vacante.etiquetas else []
+            v_hard_req = []
+            v_soft_req = []
+
+            # Clasificar tags de la vacante usando el diccionario global
+            for tag_id in v_tags:
+                if tag_id in VACANTE_TAGS['2']['etiquetas']: # Sección 2 = Hard
+                    v_hard_req.append(tag_id)
+                elif tag_id in VACANTE_TAGS['3']['etiquetas']: # Sección 3 = Soft
+                    v_soft_req.append(tag_id)
+
+            # === 2. CÁLCULO DE ÍNDICES (Fórmulas PDF) ===
+
+            # --- A. D-A Fit (Demanda - Habilidades) ---
+            # Alpha: Escolaridad (1 - |Req - User| / 61) -> Rango [10, 71], max dif = 61
+            dif_esc = abs(v_esc - u_esc)
+            alpha = 1 - (dif_esc / 61)
+            alpha = max(0, alpha) # Evitar negativos
+
+            # Beta: Experiencia (1 - |Req - User| / 7) -> Rango [0, 7]
+            dif_exp = abs(v_exp - u_exp)
+            beta = 1 - (dif_exp / 7)
+            beta = max(0, beta)
+
+            # Sigma: Hard Skills (Coincidencias / Requeridas)
+            # Intersección de sets para contar coincidencias únicas
+            matches_hard = len(set(u_hard) & set(v_hard_req))
+            total_hard_req = len(v_hard_req)
+            sigma = (matches_hard / total_hard_req) if total_hard_req > 0 else 1 # Si no pide nada, tienes 100%
+
+            # Promedio D-A Fit
+            da_fit = (alpha + beta + sigma) / 3
+
+            # --- B. N-S Fit (Necesidades - Suministros) ---
+            # Promedio de satisfacción / 5
+            ns_fit = satisfaccion_avg / 5
+
+            # --- C. P-O Fit (Persona - Organización) ---
+            # Soft Skills (Coincidencias / Requeridas)
+            matches_soft = len(set(u_soft) & set(v_soft_req))
+            total_soft_req = len(v_soft_req)
+            po_fit = (matches_soft / total_soft_req) if total_soft_req > 0 else 1
+
+            # === 3. CÁLCULO FINAL ===
+            # Compatibilidad Promedio (Por ahora, luego será MLP)
+            compatibilidad_final = (da_fit + ns_fit + po_fit) / 3
+
+            # === 4. GUARDAR ===
+            Postulacion.objects.create(
+                vacante=vacante,
+                trabajador=trabajador,
+                estado='En revisión',
+                # Guardamos los índices calculados para futuro entrenamiento de la IA
+                D_A_fit=Decimal(da_fit),
+                N_S_fit=Decimal(ns_fit),
+                P_O_fit=Decimal(po_fit),
+                compatibilidad=Decimal(compatibilidad_final)
+            )
+
+            # Actualizar contador de la vacante
+            vacante.postulaciones_count += 1
+            vacante.save()
+
+            messages.success(request, f"¡Postulación enviada! Tu compatibilidad inicial es del {int(compatibilidad_final * 100)}%")
+            return redirect('home_t')
+        
+        except Exception as e:
+            messages.error(request, f"Ocurrió un error al procesar tu postulación: {str(e)}")
+            return redirect('detail_vac_trab', vacante_id=vacante_id)
+
+    # --- MANEJO DEL GET (Mostrar Formulario) ---
+    
+    # Preparamos los diccionarios para el template
+    context = {
+        'vacante': vacante,
+        # Diccionarios directos para iterar en el template
+        'hard_skills_dict': VACANTE_TAGS['2']['etiquetas'],
+        'soft_skills_dict': VACANTE_TAGS['3']['etiquetas'],
+        'tiempo_experiencia_dict': TIEMPO_EXPERIENCIA,
+        
+        # Diccionario simple para iterar los campos de estrellas
+        'satisfaccion_fields': {
+            'sat_sueldo': 'Sueldo Ofrecido',
+            'sat_horario': 'Horario de Trabajo',
+            'sat_requisitos': 'Requisitos Solicitados',
+            'sat_prestaciones': 'Prestaciones y Beneficios'
+        },
+        
+        # Datos procesados para mostrar info útil en el panel derecho
+        'nombre_area_sinco': "Tecnología (Ejemplo)", # Aquí deberías buscar el nombre real en SINCO usando vacante.area_ocupacion
+        'requisitos_list': vacante.requisitos.split('|||') if vacante.requisitos else [],
+        'prestaciones_list': vacante.prestaciones.split('|||') if vacante.prestaciones else [],
+    }
+    
+    return render(request, 'postulacion_form.html', context)
 
 '''
 

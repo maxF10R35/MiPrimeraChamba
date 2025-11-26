@@ -1,0 +1,298 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Postularme | {{ vacante.nombre_puesto }}</title>
+    
+    <!-- Bootstrap 5 CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Iconos -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css">
+    
+    <style>
+        body { background-color: #f8f9fa; font-family: 'Segoe UI', sans-serif; padding-bottom: 50px; }
+        
+        /* Layout */
+        .form-card {
+            background: white;
+            border-radius: 15px;
+            border: 1px solid #e9ecef;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.05);
+            padding: 30px 40px;
+        }
+
+        /* Panel Lateral Sticky (Referencia) */
+        .ref-card {
+            background: white;
+            border-radius: 12px;
+            border: 1px solid #dee2e6;
+            padding: 20px;
+            position: sticky;
+            top: 20px;
+        }
+
+        .section-title {
+            font-weight: 700;
+            color: #0d6efd;
+            border-bottom: 2px solid #e9ecef;
+            padding-bottom: 8px;
+            margin-bottom: 20px;
+            margin-top: 10px;
+            font-size: 1.1rem;
+        }
+
+        /* Estilos Rating (Estrellas) Reversa para CSS puro */
+        .rating-group {
+            display: inline-flex;
+            flex-direction: row-reverse;
+            justify-content: flex-end;
+        }
+        .rating-input { position: absolute !important; left: -9999px !important; }
+        .rating-label {
+            cursor: pointer; padding: 0 0.1em; font-size: 1.5rem; color: #dee2e6; transition: color 0.2s;
+        }
+        .rating-label:hover,
+        .rating-label:hover ~ .rating-label,
+        .rating-input:checked ~ .rating-label { color: #ffc107; }
+
+        /* Tags selectables */
+        .tag-check { position: absolute; opacity: 0; }
+        .tag-label {
+            display: inline-block;
+            padding: 6px 14px;
+            background-color: #fff;
+            border: 1px solid #dee2e6;
+            border-radius: 50px;
+            color: #495057;
+            cursor: pointer;
+            margin: 4px;
+            transition: all 0.2s;
+            font-size: 0.9rem;
+            user-select: none;
+        }
+        .tag-check:checked + .tag-label {
+            background-color: #e7f1ff;
+            color: #0d6efd;
+            border-color: #0d6efd;
+            font-weight: 600;
+        }
+
+        /* Toggle Rápida */
+        .toggle-container {
+            background-color: #e7f1ff;
+            padding: 15px;
+            border-radius: 10px;
+            border: 1px solid #cce5ff;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 20px;
+        }
+        
+        .ref-list { padding-left: 20px; margin-bottom: 0; }
+        .ref-list li { margin-bottom: 5px; color: #495057; font-size: 0.9rem; }
+    </style>
+</head>
+<body>
+
+    <nav class="navbar navbar-light bg-white shadow-sm mb-4">
+        <div class="container">
+            <span class="navbar-brand fw-bold text-primary"><i class="bi bi-briefcase-fill me-2"></i>Tu Primera Chamba</span>
+            <a href="{% url 'detail_vac_trab' vacante.id %}" class="btn btn-outline-secondary btn-sm">Cancelar</a>
+        </div>
+    </nav>
+
+    <div class="container">
+        <div class="row">
+            
+            <!-- COLUMNA IZQUIERDA: FORMULARIO -->
+            <div class="col-lg-8">
+                
+                <div class="mb-4">
+                    <h2 class="fw-bold mb-1">Postulación a {{ vacante.nombre_puesto }}</h2>
+                    <p class="text-muted">{{ vacante.empresa.nombre }}</p>
+                </div>
+
+                <!-- Toggle Postulación Rápida -->
+                <div class="toggle-container">
+                    <div>
+                        <h6 class="fw-bold mb-1 text-primary"><i class="bi bi-lightning-charge-fill me-2"></i>Postulación Rápida</h6>
+                        <small class="text-muted">Se usarán tus datos guardados y valores por defecto.</small>
+                    </div>
+                    <div class="form-check form-switch">
+                        <input class="form-check-input" type="checkbox" name="es_rapida" id="quickApply" value="true" style="width: 3em; height: 1.5em;">
+                    </div>
+                </div>
+
+                <form method="POST" action="" class="form-card" id="mainForm">
+                    {% csrf_token %}
+
+                    <!-- 1. EXPERIENCIA EN EL ÁREA (Nuevo Campo) -->
+                    <div class="mb-5" id="section-experiencia">
+                        <h5 class="section-title">1. Experiencia en el Área</h5>
+                        <p class="small text-muted">
+                            Esta vacante pertenece al área (SINCO): <strong>{{ nombre_area_sinco }}</strong>
+                        </p>
+                        
+                        <div class="mb-3">
+                            <div class="form-check">
+                                <input class="form-check-input" type="checkbox" id="checkExpArea" name="tiene_experiencia_area">
+                                <label class="form-check-label fw-bold" for="checkExpArea">
+                                    Sí, he trabajado anteriormente en esta área específica.
+                                </label>
+                            </div>
+                        </div>
+
+                        <div class="mb-3" id="containerNivelExp" style="display: none;">
+                            <label class="form-label">¿Cuánto tiempo de experiencia tienes?</label>
+                            <select class="form-select w-auto" name="tiempo_experiencia">
+                                <option value="">Selecciona...</option>
+                                <!-- Usamos el diccionario de TIEMPO_EXPERIENCIA desde la vista -->
+                                {% for k, v in tiempo_experiencia_dict.items %}
+                                    <option value="{{ k }}">{{ v }}</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                    </div>
+
+                    <!-- 2. HARD SKILLS (Mostrar TODAS las opciones disponibles) -->
+                    <div class="mb-5" id="section-hard">
+                        <h5 class="section-title">2. Habilidades Técnicas</h5>
+                        <p class="text-muted small">Selecciona las herramientas que dominas.</p>
+                        
+                        <div class="d-flex flex-wrap" style="max-height: 250px; overflow-y: auto;">
+                            {% for id, tag in hard_skills_dict.items %}
+                                <label>
+                                    <input type="checkbox" class="tag-check" name="hard_skills_selected" value="{{ id }}">
+                                    <span class="tag-label">{{ tag.nombre }}</span>
+                                </label>
+                            {% endfor %}
+                        </div>
+                    </div>
+
+                    <!-- 3. SOFT SKILLS (Mostrar TODAS las opciones disponibles) -->
+                    <div class="mb-5" id="section-soft">
+                        <h5 class="section-title">3. Habilidades Blandas</h5>
+                        <p class="text-muted small">Selecciona tus competencias principales.</p>
+                        
+                        <div class="d-flex flex-wrap" style="max-height: 250px; overflow-y: auto;">
+                            {% for id, tag in soft_skills_dict.items %}
+                                <label>
+                                    <input type="checkbox" class="tag-check" name="soft_skills_selected" value="{{ id }}">
+                                    <span class="tag-label">{{ tag.nombre }}</span>
+                                </label>
+                            {% endfor %}
+                        </div>
+                    </div>
+
+                    <!-- 4. ENCUESTA SATISFACCIÓN (N-S Fit) -->
+                    <div class="mb-4" id="section-satisfaccion">
+                        <h5 class="section-title">4. Expectativas (N-S Fit)</h5>
+                        <p class="text-muted small">Califica tu satisfacción con la oferta (revisa el panel derecho).</p>
+
+                        <div class="row g-4 mt-2">
+                            {% for field, label in satisfaccion_fields.items %}
+                            <div class="col-md-6">
+                                <label class="fw-bold d-block mb-2">{{ label }}</label>
+                                <div class="rating-group">
+                                    <input class="rating-input" type="radio" name="{{ field }}" value="5" id="{{ field }}_5"><label for="{{ field }}_5" class="rating-label"><i class="bi bi-star-fill"></i></label>
+                                    <input class="rating-input" type="radio" name="{{ field }}" value="4" id="{{ field }}_4"><label for="{{ field }}_4" class="rating-label"><i class="bi bi-star-fill"></i></label>
+                                    <input class="rating-input" type="radio" name="{{ field }}" value="3" id="{{ field }}_3"><label for="{{ field }}_3" class="rating-label"><i class="bi bi-star-fill"></i></label>
+                                    <input class="rating-input" type="radio" name="{{ field }}" value="2" id="{{ field }}_2"><label for="{{ field }}_2" class="rating-label"><i class="bi bi-star-fill"></i></label>
+                                    <input class="rating-input" type="radio" name="{{ field }}" value="1" id="{{ field }}_1" checked><label for="{{ field }}_1" class="rating-label"><i class="bi bi-star-fill"></i></label>
+                                </div>
+                            </div>
+                            {% endfor %}
+                        </div>
+                    </div>
+
+                    <div class="d-grid gap-2 mt-4">
+                        <button type="submit" class="btn btn-primary btn-lg fw-bold shadow-sm">
+                            Enviar Postulación
+                        </button>
+                    </div>
+
+                </form>
+            </div>
+
+            <!-- COLUMNA DERECHA: REFERENCIA (Visible en LG) -->
+            <div class="col-lg-4 d-none d-lg-block">
+                <div class="ref-card shadow-sm">
+                    <h6 class="fw-bold text-dark mb-3 border-bottom pb-2">Resumen de la Vacante</h6>
+                    
+                    <div class="mb-3">
+                        <small class="text-uppercase text-muted fw-bold" style="font-size: 0.7rem;">Requisitos</small>
+                        {% if requisitos_list %}
+                        <ul class="ref-list mt-1">
+                            {% for req in requisitos_list %}
+                                {% if req %}<li>{{ req }}</li>{% endif %}
+                            {% endfor %}
+                        </ul>
+                        {% else %}
+                        <p class="small text-muted fst-italic">No especificados</p>
+                        {% endif %}
+                    </div>
+
+                    <div class="mb-3">
+                        <small class="text-uppercase text-muted fw-bold" style="font-size: 0.7rem;">Prestaciones</small>
+                        {% if prestaciones_list %}
+                        <ul class="ref-list mt-1">
+                            {% for pres in prestaciones_list %}
+                                {% if pres %}<li>{{ pres }}</li>{% endif %}
+                            {% endfor %}
+                        </ul>
+                        {% else %}
+                        <p class="small text-muted fst-italic">No especificadas</p>
+                        {% endif %}
+                    </div>
+
+                    <div class="mb-3">
+                        <small class="text-uppercase text-muted fw-bold" style="font-size: 0.7rem;">Horario y Sueldo</small>
+                        <p class="mb-0 small text-dark mt-1"><i class="bi bi-clock me-1"></i> {{ vacante.horario }}</p>
+                        <p class="mb-0 small text-success fw-bold"><i class="bi bi-cash me-1"></i> ${{ vacante.salario|floatformat:0 }}</p>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+    </div>
+
+    <script>
+        // Lógica Experiencia
+        document.getElementById('checkExpArea').addEventListener('change', function() {
+            const container = document.getElementById('containerNivelExp');
+            if(this.checked) {
+                container.style.display = 'block';
+                container.querySelector('select').required = true; // Hacer obligatorio si marca sí
+            } else {
+                container.style.display = 'none';
+                container.querySelector('select').required = false;
+                container.querySelector('select').value = "";
+            }
+        });
+
+        // Lógica Postulación Rápida
+        document.getElementById('quickApply').addEventListener('change', function() {
+            const sections = ['section-experiencia', 'section-hard', 'section-soft', 'section-satisfaccion'];
+            const isQuick = this.checked;
+            
+            sections.forEach(id => {
+                const el = document.getElementById(id);
+                if(isQuick) {
+                    el.style.opacity = '0.4';
+                    el.style.pointerEvents = 'none'; // Deshabilitar interacción
+                    // Desactivar inputs internos para que no validen required
+                    el.querySelectorAll('input, select').forEach(i => i.disabled = true);
+                } else {
+                    el.style.opacity = '1';
+                    el.style.pointerEvents = 'auto';
+                    el.querySelectorAll('input, select').forEach(i => i.disabled = false);
+                }
+            });
+        });
+    </script>
+
+</body>
+</html>

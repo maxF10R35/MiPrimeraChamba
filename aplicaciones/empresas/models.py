@@ -20,6 +20,8 @@ class Empresa(models.Model):
 class Vacante(models.Model):
     nombre_puesto = models.CharField(max_length=100, null=False, blank=False)
     area_ocupacion = models.IntegerField(null=True, blank=True)
+    tiempo_experiencia = models.CharField(max_length=100, null=False, blank=False, default='0')
+    escolaridad_minima = models.CharField(max_length=100, null=False, blank=False, default='22')
     descripcion = models.TextField(null=False, blank=False, default='Descripción del puesto.')
     requisitos = models.TextField(null=False, blank=False, default='Requisitos del puesto.')
     prestaciones = models.TextField(null=False, blank=False, default='Prestaciones del puesto.')
