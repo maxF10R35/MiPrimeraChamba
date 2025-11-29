@@ -289,10 +289,10 @@ def postularse(request, vacante_id):
                 trabajador=trabajador,
                 estado='En revisión',
                 # Guardamos los índices calculados para futuro entrenamiento de la IA
-                D_A_fit=round(da_fit, 2),
-                N_S_fit=round(ns_fit, 2),
-                P_O_fit=round(po_fit, 2),
-                compatibilidad=round(compatibilidad_final, 2)
+                D_A_fit=round(float(da_fit), 2),
+                N_S_fit=round(float(ns_fit), 2),
+                P_O_fit=round(float(po_fit), 2),
+                compatibilidad=compatibilidad_final
             )
 
             # Actualizar contador de la vacante
