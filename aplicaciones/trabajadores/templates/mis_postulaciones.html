@@ -1,0 +1,132 @@
+{% extends 'base_trabajadores.html' %}
+
+{% block title %}Mis Postulaciones | Tu Primera Chamba{% endblock %}
+
+{% block extra_css %}
+<style>
+    .page-header {
+        background: white;
+        padding: 30px 0;
+        border-bottom: 1px solid #e9ecef;
+        margin-bottom: 30px;
+        margin-top: -40px; /* Ajuste visual base */
+    }
+
+    .application-card {
+        background: white;
+        border: 1px solid #e9ecef;
+        border-radius: 12px;
+        padding: 20px;
+        margin-bottom: 20px;
+        transition: all 0.2s;
+        position: relative;
+        border-left: 5px solid #6c757d;
+    }
+    
+    .application-card:hover {
+        transform: translateY(-3px);
+        box-shadow: 0 10px 20px rgba(0,0,0,0.05);
+    }
+
+    /* Colores por Estado (Ajusta los strings según tu modelo) */
+    .status-En-revisión { border-left-color: #ffc107; }
+    .status-Entrevista { border-left-color: #0d6efd; }
+    .status-Rechazado { border-left-color: #dc3545; }
+    .status-Contratado { border-left-color: #198754; }
+
+    /* Badges */
+    .badge-status { font-size: 0.8rem; padding: 5px 12px; border-radius: 20px; font-weight: 600; }
+    
+    .bg-status-En-revisión { background-color: #fff3cd; color: #856404; }
+    .bg-status-Entrevista { background-color: #cfe2ff; color: #084298; }
+    .bg-status-Rechazado { background-color: #f8d7da; color: #842029; }
+    .bg-status-Contratado { background-color: #d1e7dd; color: #0f5132; }
+
+    .match-score { font-weight: 800; font-size: 1.1rem; }
+    .progress-thin { height: 6px; border-radius: 3px; background-color: #f1f3f5; width: 100px; }
+
+    /* Botón flotante */
+    .btn-cancel { z-index: 10; position: relative; }
+    
+    /* Enlace tarjeta completa */
+    .card-link { position: absolute; top: 0; left: 0; right: 0; bottom: 0; z-index: 1; }
+</style>
+{% endblock %}
+
+{% block content %}
+
+    </div> <!-- Cierre temporal container base -->
+    <div class="page-header">
+        <div class="container">
+            <h2 class="fw-bold mb-1">Mis Postulaciones</h2>
+            <p class="text-muted mb-0">Gestiona el estado de tus solicitudes activas.</p>
+        </div>
+    </div>
+    <div class="container"> <!-- Reapertura -->
+
+    <div class="row">
+        <div class="col-lg-10 mx-auto">
+            
+            {% for post in postulaciones %}
+            <!-- Clase dinámica para color según estado (reemplaza espacios por guiones si es necesario) -->
+            <div class="application-card status-{{ post.estado|cut:' ' }}">
+                
+                <!-- Enlace al detalle de la vacante -->
+                <a href="{% url 'detail_vac_trab' post.vacante.id %}" class="card-link"></a>
+                
+                <div class="row align-items-center">
+                    <!-- Info -->
+                    <div class="col-md-5 mb-3 mb-md-0">
+                        <h5 class="fw-bold mb-1 text-dark">{{ post.vacante.nombre_puesto }}</h5>
+                        <p class="text-muted mb-1 small text-uppercase fw-bold">
+                            {{ post.vacante.empresa.nombre|default:"Empresa Confidencial" }}
+                        </p>
+                        <small class="text-muted">
+                            <i class="bi bi-clock-history me-1"></i>Aplicado: {{ post.fecha_postulacion|date:"d M Y" }}
+                        </small>
+                    </div>
+
+                    <!-- Score -->
+                    <div class="col-md-3 mb-3 mb-md-0 text-center border-start border-end">
+                        <div class="d-flex flex-column align-items-center">
+                            <small class="text-muted mb-1">Tu Compatibilidad</small>
+                            <span class="match-score {% if post.score_percent >= 80 %}text-success{% elif post.score_percent >= 50 %}text-primary{% else %}text-muted{% endif %}">
+                                {{ post.score_percent }}%
+                            </span>
+                            <div class="progress progress-thin mt-1">
+                                <div class="progress-bar {% if post.score_percent >= 80 %}bg-success{% elif post.score_percent >= 50 %}bg-primary{% else %}bg-secondary{% endif %}" 
+                                     role="progressbar" style="width: {{ post.score_percent }}%"></div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Estado y Acciones -->
+                    <div class="col-md-4 text-end d-flex align-items-center justify-content-end gap-3">
+                        <span class="badge-status bg-status-{{ post.estado|cut:' ' }}">
+                            {{ post.estado }}
+                        </span>
+                        
+                        {% if post.estado == 'En revisión' %}
+                            <form action="{% url 'cancelar_postulacion' post.id %}" method="POST" onsubmit="return confirm('¿Seguro que deseas cancelar esta postulación?');">
+                                {% csrf_token %}
+                                <button type="submit" class="btn btn-outline-danger btn-sm btn-cancel">
+                                    <i class="bi bi-x-lg"></i> Cancelar
+                                </button>
+                            </form>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+            {% empty %}
+            <div class="text-center py-5">
+                <i class="bi bi-inbox fs-1 text-muted opacity-25"></i>
+                <h4 class="mt-3 text-muted">Aún no tienes postulaciones</h4>
+                <p class="text-muted">¡Explora las vacantes y encuentra tu primera chamba hoy!</p>
+                <a href="{% url 'home_t' %}" class="btn btn-primary mt-2">Buscar Vacantes</a>
+            </div>
+            {% endfor %}
+
+        </div>
+    </div>
+
+{% endblock %}

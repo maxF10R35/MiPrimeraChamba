@@ -13,4 +13,5 @@ urlpatterns = [
     path('cambio-estatus/<int:vacante_id>/', views.cambio_estatus, name='status_change'),
     path('mostrar-marco/', views.mostrar_marco, name='marco'),
     path('perfil-empresa/', views.perfil_empresa, name='perfil_empresa'),
+    path('ver-perfil-candidato/<int:postulacion_id>/', views.ver_perfil_candidato, name='ver_perfil_candidato'),
 ]

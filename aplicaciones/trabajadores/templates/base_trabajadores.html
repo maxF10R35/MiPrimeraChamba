@@ -12,12 +12,21 @@
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css">
     
     <style>
+        /* CORRECCIÓN 1: Usar min-height en lugar de height fijo para permitir scroll infinito correcto */
+        html {
+            min-height: 100%;
+            position: relative;
+        }
+        
         body {
             background-color: #f8f9fa;
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
             min-height: 100vh;
             display: flex;
             flex-direction: column;
+            margin: 0;
+            /* Aseguramos que el body no tenga padding que interfiera */
+            padding: 0;
         }
 
         /* Navbar Customization */
@@ -25,6 +34,7 @@
             background-color: #ffffff;
             box-shadow: 0 2px 15px rgba(0,0,0,0.04);
             padding: 0.8rem 0;
+            flex-shrink: 0;
         }
         
         .navbar-brand {
@@ -57,10 +67,11 @@
             font-size: 0.9rem;
         }
 
-        /* Main Content Wrapper */
+        /* CORRECCIÓN 2: Padding inferior aumentado (80px) para separar el contenido del footer a la fuerza */
         .main-wrapper {
-            flex: 1;
-            padding: 40px 0;
+            flex: 1 0 auto;
+            padding: 40px 0 80px 0; /* Arriba 40, Abajo 80 */
+            width: 100%;
         }
 
         /* Footer */
@@ -69,6 +80,10 @@
             padding: 30px 0;
             border-top: 1px solid #e9ecef;
             margin-top: auto;
+            flex-shrink: 0;
+            position: relative;
+            z-index: 10;
+            width: 100%;
         }
 
         /* Responsive adjustments */
@@ -101,18 +116,13 @@
             <div class="collapse navbar-collapse" id="navbarNav">
                 <ul class="navbar-nav mx-auto">
                     <li class="nav-item">
-                        <!-- Nota: Usa 'home_trabajador' o el nombre que definas en urls.py -->
                         <a class="nav-link {% if request.resolver_match.url_name == 'home_t' %}active{% endif %}" href="{% url 'home_t' %}">
                             <i class="bi bi-house-door me-1"></i> Inicio
                         </a>
                     </li>
+
                     <li class="nav-item">
-                        <a class="nav-link" href="#">
-                            <i class="bi bi-search me-1"></i> Buscar Empleo
-                        </a>
-                    </li>
-                    <li class="nav-item">
-                        <a class="nav-link" href="#">
+                        <a class="nav-link {% if request.resolver_match.url_name == 'mis_postulaciones' %}active{% endif %}" href="{% url 'mis_postulaciones' %}">
                             <i class="bi bi-send me-1"></i> Mis Postulaciones
                         </a>
                     </li>
@@ -130,13 +140,8 @@
                         <ul class="dropdown-menu dropdown-menu-end shadow-sm border-0 mt-2" aria-labelledby="userDropdown">
                             <li><h6 class="dropdown-header">Mi Cuenta</h6></li>
                             <li>
-                                <a class="dropdown-item" href="#">
+                                <a class="dropdown-item" href="{% url 'perfil_trabajador' %}">
                                     <i class="bi bi-person me-2 text-muted"></i> Ver Perfil
-                                </a>
-                            </li>
-                            <li>
-                                <a class="dropdown-item" href="#">
-                                    <i class="bi bi-gear me-2 text-muted"></i> Configuración
                                 </a>
                             </li>
                             <li><hr class="dropdown-divider"></li>
@@ -166,7 +171,6 @@
             {% endif %}
 
             {% block content %}
-            <!-- El contenido de cada página va aquí -->
             {% endblock %}
         </div>
     </main>
@@ -184,3 +188,5 @@
     {% block extra_js %}{% endblock %}
 </body>
 </html>
+```
+```

@@ -2,14 +2,16 @@ import json
 from aplicaciones.etiquetas import VACANTE_TAGS, SINCO
 from django.contrib import messages
 from django.contrib.auth.models import User
-from django.contrib.auth import login, logout, authenticate
-#from django.contrib.auth.decorators import login_required
+#from django.contrib.auth import login, logout, authenticate
+from django.contrib.auth.decorators import login_required
 from aplicaciones.general.decorators import empresa_required
 from django.shortcuts import get_object_or_404
 from aplicaciones.empresas.models import Empresa, Vacante, Postulacion
 from aplicaciones.trabajadores.models import Trabajador
 from django.shortcuts import render, redirect
 #from django.http import HttpResponse
+from aplicaciones.etiquetas import SINCO, VACANTE_TAGS, GENERO_OPCIONES, NIVEL_ESTUDIOS, TIEMPO_EXPERIENCIA
+
 
 # Create your views here.
 
@@ -67,7 +69,7 @@ def SignUp(request):
     # Si es GET o si hubo error, mostramos la página
     return render(request, 'signup.html', context)
 
-
+#funciones de inicion de sesión, ahora se invocan desde aplicaciones/general/
 '''
 def SignIn(request):
     if request.method == 'POST':
@@ -367,5 +369,60 @@ def perfil_empresa(request):
     return render(request, 'perfil-empresa.html', context)
 
 
+
+@login_required
+@empresa_required
+def ver_perfil_candidato(request, postulacion_id): # Cambiamos el argumento recibido
+    # 1. Obtener la postulación asegurando que sea de una vacante de la empresa actual
+    # Esto es vital para la seguridad: evita que una empresa vea postulaciones de otra.
+    postulacion = get_object_or_404(Postulacion, id=postulacion_id, vacante__empresa=request.user.empresa)
+    
+    # 2. Actualizar estado a "Visto" o "Revisado" automáticamente
+    if postulacion.estado == 'En revisión':
+        postulacion.estado = 'Visto' # O el texto que prefieras mostrar al candidato
+        postulacion.save()
+
+    # 3. Obtener el objeto trabajador desde la postulación
+    candidato = postulacion.trabajador
+
+    # --- HELPERS PARA TRADUCIR CÓDIGOS ---
+    def get_sinco_name(code):
+        if not code: return "No especificado"
+        code_str = str(code)
+        for div in SINCO.values():
+            for grp in div['grupos'].values():
+                if code_str in grp['subgrupos']:
+                    return grp['subgrupos'][code_str]
+        return "Área desconocida"
+
+    def get_tag_names(ids_str, section_key):
+        if not ids_str: return []
+        names = []
+        ids = ids_str.split(',')
+        tags_dict = VACANTE_TAGS[section_key]['etiquetas']
+        for tag_id in ids:
+            if tag_id in tags_dict:
+                names.append(tags_dict[tag_id]['nombre'])
+        return names
+
+    # --- PREPARAR CONTEXTO ---
+    context = {
+        'candidato': candidato,
+        'postulacion': postulacion, # Pasamos también la postulación por si quieres mostrar la fecha o el estado
+        # Datos traducidos
+        'genero_texto': GENERO_OPCIONES.get(candidato.genero, 'No especificado'),
+        'estudios_texto': NIVEL_ESTUDIOS.get(candidato.estudios, 'No especificado'),
+        'experiencia_texto': TIEMPO_EXPERIENCIA.get(candidato.ult_exp, 'Sin experiencia'),
+        'area_ocup_texto': get_sinco_name(candidato.ult_area_ocup),
+        
+        # Listas de Habilidades
+        'hard_skills': get_tag_names(candidato.hard_skills, '2'),
+        'soft_skills': get_tag_names(candidato.soft_skills, '3'),
+    }
+
+    return render(request, 'perfil_candidato.html', context)
+
+
+#Funciones auxxiliares
 def mostrar_marco(request):
     return render(request, 'marco.html')

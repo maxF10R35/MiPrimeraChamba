@@ -1,0 +1,268 @@
+{% extends 'base_trabajadores.html' %}
+
+{% block title %}Mi Perfil | {{ trabajador.nombre }}{% endblock %}
+
+{% block extra_css %}
+<style>
+    /* Header del Perfil */
+    .profile-header {
+        background: white;
+        border-radius: 12px;
+        padding: 30px;
+        box-shadow: 0 4px 20px rgba(0,0,0,0.05);
+        margin-bottom: 30px;
+        margin-top: 20px;
+        border-top: 5px solid #0d6efd;
+    }
+
+    .profile-avatar {
+        width: 100px;
+        height: 100px;
+        background-color: #f8f9fa;
+        color: #0d6efd;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-weight: 800;
+        font-size: 2.5rem;
+        border: 4px solid #e7f1ff;
+    }
+
+    /* Secciones */
+    .content-card {
+        background: white;
+        border-radius: 12px;
+        padding: 25px;
+        box-shadow: 0 2px 10px rgba(0,0,0,0.03);
+        margin-bottom: 25px;
+        height: 50%; /* Para que las tarjetas en columnas paralelas tengan la misma altura visual si se usa flex */
+    }
+
+    .section-title {
+        font-weight: 700;
+        color: #495057;
+        font-size: 1.1rem;
+        border-bottom: 1px solid #f0f0f0;
+        padding-bottom: 10px;
+        margin-bottom: 20px;
+        display: flex;
+        align-items: center;
+    }
+    .section-title i { color: #0d6efd; margin-right: 10px; }
+
+    /* Tags y Badges */
+    .skill-tag {
+        background-color: #f1f3f5;
+        color: #495057;
+        padding: 5px 12px;
+        border-radius: 6px;
+        font-size: 0.85rem;
+        margin-right: 5px;
+        margin-bottom: 8px;
+        display: inline-block;
+        font-weight: 500;
+    }
+    
+    .soft-tag {
+        background-color: #e7f1ff;
+        color: #0d6efd;
+    }
+
+    .info-item {
+        margin-bottom: 15px;
+    }
+    .info-label {
+        font-size: 0.8rem;
+        text-transform: uppercase;
+        color: #adb5bd;
+        font-weight: 700;
+        display: block;
+        margin-bottom: 2px;
+    }
+    .info-value {
+        font-size: 0.95rem;
+        color: #212529;
+        font-weight: 500;
+    }
+
+    /* Timeline Experiencia (Visual simple) */
+    .timeline-item {
+        border-left: 2px solid #e9ecef;
+        padding-left: 20px;
+        padding-bottom: 20px;
+        position: relative;
+    }
+    .timeline-item::before {
+        content: '';
+        width: 10px;
+        height: 10px;
+        background: #0d6efd;
+        border-radius: 50%;
+        position: absolute;
+        left: -6px;
+        top: 5px;
+    }
+    .timeline-item:last-child { border-left: none; padding-bottom: 0; }
+
+    /* Contenedor principal con padding inferior extra para evitar traslape */
+    .profile-main-container {
+        padding-bottom: 100px; /* Espacio generoso al final */
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+
+<!-- Envolvemos todo en un div contenedor para controlar el espaciado global -->
+<div class="profile-main-container">
+
+    <!-- 1. HEADER DE IDENTIDAD -->
+    <div class="profile-header">
+        <div class="row align-items-center">
+            <div class="col-md-auto text-center text-md-start mb-3 mb-md-0">
+                <div class="profile-avatar mx-auto mx-md-0">
+                    {{ trabajador.nombre|slice:":1" }}{{ trabajador.apellido_p|slice:":1" }}
+                </div>
+            </div>
+            <div class="col-md">
+                <div class="text-center text-md-start">
+                    <h2 class="fw-bold text-dark mb-1">{{ trabajador.nombre }} {{ trabajador.apellido_p }} {{ trabajador.apellido_m }}</h2>
+                    <p class="text-primary fw-bold mb-2 fs-5">{{ trabajador.titulo|default:"Profesional en búsqueda activa" }}</p>
+                    
+                    <div class="text-muted small d-flex flex-wrap justify-content-center justify-content-md-start gap-3">
+                        <span><i class="bi bi-geo-alt-fill me-1"></i> CP: {{ trabajador.cod_post|default:"--" }}</span>
+                        <span><i class="bi bi-telephone-fill me-1"></i> {{ trabajador.telefono|default:"Sin teléfono" }}</span>
+                        <span><i class="bi bi-envelope-fill me-1"></i> {{ trabajador.email }}</span>
+                        {% if trabajador.movilidad_limitada %}
+                            <span class="text-primary"><i class="bi bi-universal-access me-1"></i> Movilidad Limitada</span>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-auto text-center mt-3 mt-md-0">
+                <button class="btn btn-outline-primary btn-sm px-4 rounded-pill">
+                    <i class="bi bi-pencil me-2"></i>Editar Perfil
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <div class="row g-4">
+        
+        <!-- COLUMNA IZQUIERDA: DATOS CLAVE -->
+        <div class="col-lg-4">
+            
+            <!-- Datos Personales -->
+            <div class="content-card">
+                <h5 class="section-title"><i class="bi bi-person-lines-fill"></i>Datos Personales</h5>
+                
+                <div class="info-item">
+                    <span class="info-label">Género</span>
+                    <span class="info-value">{{ genero_texto }}</span>
+                </div>
+                <div class="info-item">
+                    <span class="info-label">Nacionalidad</span>
+                    <span class="info-value">{{ trabajador.nacionalidad }}</span>
+                </div>
+                <div class="info-item">
+                    <span class="info-label">Usuario</span>
+                    <span class="info-value">@{{ trabajador.usuario.username }}</span>
+                </div>
+            </div>
+
+            <!-- Espaciador vertical en móvil, automático en grid desktop -->
+            <div class="d-lg-none mb-4"></div>
+
+            <!-- Habilidades (Skills) -->
+            <div class="content-card">
+                <h5 class="section-title"><i class="bi bi-tools"></i>Habilidades</h5>
+                
+                <div class="mb-3">
+                    <span class="info-label mb-2">Técnicas (Hard Skills)</span>
+                    <div>
+                        {% for skill in hard_skills_list %}
+                            <span class="skill-tag">{{ skill }}</span>
+                        {% empty %}
+                            <small class="text-muted fst-italic">Sin habilidades técnicas registradas.</small>
+                        {% endfor %}
+                    </div>
+                </div>
+
+                <div>
+                    <span class="info-label mb-2">Personales (Soft Skills)</span>
+                    <div>
+                        {% for skill in soft_skills_list %}
+                            <span class="skill-tag soft-tag">{{ skill }}</span>
+                        {% empty %}
+                            <small class="text-muted fst-italic">Sin habilidades blandas registradas.</small>
+                        {% endfor %}
+                    </div>
+                </div>
+            </div>
+
+        </div>
+
+        <!-- COLUMNA DERECHA: TRAYECTORIA -->
+        <div class="col-lg-8">
+            
+            <!-- Biografía -->
+            <div class="content-card mb-4">
+                <h5 class="section-title"><i class="bi bi-text-paragraph"></i>Sobre Mí</h5>
+                <p class="text-muted mb-0" style="line-height: 1.6;">
+                    {{ trabajador.biografia|default:"No has añadido una descripción personal aún. ¡Cuéntanos sobre ti!"|linebreaks }}
+                </p>
+            </div>
+
+            <!-- Educación y Experiencia -->
+            <div class="content-card mb-4">
+                <h5 class="section-title"><i class="bi bi-briefcase"></i>Trayectoria Profesional</h5>
+                
+                <div class="timeline-item">
+                    <h6 class="fw-bold text-dark mb-1">Última Experiencia Laboral</h6>
+                    <p class="text-primary small fw-bold mb-2">{{ area_ocup_texto }}</p>
+                    <p class="text-muted small mb-2"><i class="bi bi-clock me-1"></i> Tiempo: {{ experiencia_texto }}</p>
+                    <p class="text-muted mb-0 small fst-italic">
+                        "{{ trabajador.descripcion_exp|default:'Sin descripción detallada de la experiencia.' }}"
+                    </p>
+                </div>
+
+                <div class="timeline-item">
+                    <h6 class="fw-bold text-dark mb-1">Formación Académica</h6>
+                    <p class="text-primary small fw-bold mb-0">{{ estudios_texto }}</p>
+                    {% if trabajador.titulo %}
+                        <p class="text-muted small">Título: {{ trabajador.titulo }}</p>
+                    {% endif %}
+                </div>
+            </div>
+
+            <!-- Intereses -->
+            <div class="content-card">
+                <h5 class="section-title"><i class="bi bi-heart"></i>Intereses y Preferencias</h5>
+                
+                <div class="row">
+                    <div class="col-md-6">
+                        <div class="info-item">
+                            <span class="info-label">Sector de Interés Principal</span>
+                            <span class="info-value text-primary">{{ area_interes_texto }}</span>
+                        </div>
+                    </div>
+                    <div class="col-md-12">
+                        <span class="info-label mb-2">Áreas específicas de interés</span>
+                        <div>
+                            {% for interes in intereses_list %}
+                                <span class="badge bg-light text-dark border me-1">{{ interes }}</span>
+                            {% empty %}
+                                <small class="text-muted">No has seleccionado intereses específicos.</small>
+                            {% endfor %}
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+    </div>
+
+</div> <!-- Fin del contenedor principal con padding -->
+
+{% endblock %}

@@ -12,6 +12,7 @@ from aplicaciones.empresas.models import Vacante, Postulacion
 from django.shortcuts import get_object_or_404
 # Importamos todos tus diccionarios
 from aplicaciones.etiquetas import SINCO, VACANTE_TAGS, GENERO_OPCIONES, NIVEL_ESTUDIOS, TIEMPO_EXPERIENCIA
+from .compatibilidad import evaluar_candidato
 
 
 # Administración de usuario
@@ -280,7 +281,7 @@ def postularse(request, vacante_id):
 
             # === 3. CÁLCULO FINAL ===
             # Compatibilidad Promedio (Por ahora, luego será MLP)
-            compatibilidad_final = (da_fit + ns_fit + po_fit) / 3
+            compatibilidad_final = evaluar_candidato(da_fit, ns_fit, po_fit)
 
             # === 4. GUARDAR ===
             Postulacion.objects.create(
@@ -331,26 +332,99 @@ def postularse(request, vacante_id):
     
     return render(request, 'postulacion_form.html', context)
 
-'''
 
-def iniciar_sesion_trabajador(request):
-    return render(request, 'iniciar_sesion_trabajador.html')
 
-def logout_trabajador(request):
-    return HttpResponse("Funcionalidad de inicio de sesión para trabajadores.")
+@login_required
+@trabajador_required
+def mis_postulaciones(request):
+    trabajador = request.user.trabajador
+    
+    # Obtenemos postulaciones ordenadas por fecha reciente
+    postulaciones = Postulacion.objects.filter(trabajador=trabajador).select_related('vacante', 'vacante__empresa').order_by('-fecha_postulacion')
+    
+    # Procesamos compatibilidad para visualización (x100) en memoria
+    for post in postulaciones:
+        if post.compatibilidad:
+            post.score_percent = int(post.compatibilidad * 100)
+        else:
+            post.score_percent = 0
+            
+    return render(request, 'mis_postulaciones.html', {'postulaciones': postulaciones})
 
-# Vistas principales de la aplicación
 
-def home_trabajador(request):#vista para explorar trabajos
-    return render(request, 'home_trabajador.html')
 
-def perfil_trabajador(request):#vista del perfil del trabajador
-    return render(request, 'perfil_trabajador.html')
+@login_required
+@trabajador_required
+def cancelar_postulacion(request, postulacion_id):
+    if request.method == 'POST':
+        postulacion = get_object_or_404(Postulacion, id=postulacion_id, trabajador=request.user.trabajador)
+        
+        # Opcional: Validar estado (ej: no cancelar si ya está contratado)
+        if postulacion.estado not in ['Contratado', 'Rechazado']:
+            # Actualizar contador vacante
+            vacante = postulacion.vacante
+            if vacante.postulaciones_count > 0:
+                vacante.postulaciones_count -= 1
+                vacante.save()
+            
+            postulacion.delete() # Borrado físico
+            messages.success(request, "Postulación cancelada exitosamente.")
+        else:
+            messages.error(request, "No puedes cancelar una postulación cerrada.")
+            
+    return redirect('mis_postulaciones')
 
-def mis_postulaciones(request):#vista de las postulaciones del trabajador
-    return render(request, 'mis_postulaciones.html')
 
-'''
+
+@login_required
+@trabajador_required
+def perfil_trabajador(request):
+    trabajador = request.user.trabajador
+    
+    # --- FUNCIONES HELPER PARA TRADUCIR IDs A TEXTO ---
+    
+    def get_sinco_name(code):
+        """Busca el nombre del subgrupo SINCO dado su ID"""
+        if not code: return "No especificado"
+        code_str = str(code)
+        # Búsqueda profunda en el diccionario anidado
+        for div in SINCO.values():
+            for grp in div['grupos'].values():
+                if code_str in grp['subgrupos']:
+                    return grp['subgrupos'][code_str]
+        return "Área desconocida"
+
+    def get_tag_names(ids_str, section_key):
+        """Convierte lista de IDs '1,2' a lista de nombres ['Python', 'Java']"""
+        if not ids_str: return []
+        names = []
+        ids = ids_str.split(',')
+        tags_dict = VACANTE_TAGS[section_key]['etiquetas']
+        for tag_id in ids:
+            if tag_id in tags_dict:
+                names.append(tags_dict[tag_id]['nombre'])
+        return names
+
+    # --- PREPARACIÓN DEL CONTEXTO ---
+    
+    context = {
+        'trabajador': trabajador,
+        # Traducciones directas de diccionarios planos
+        'genero_texto': GENERO_OPCIONES.get(trabajador.genero, 'No especificado'),
+        'estudios_texto': NIVEL_ESTUDIOS.get(trabajador.estudios, 'No especificado'),
+        'experiencia_texto': TIEMPO_EXPERIENCIA.get(trabajador.ult_exp, 'Sin experiencia'),
+        
+        # Traducciones complejas (SINCO)
+        'area_ocup_texto': get_sinco_name(trabajador.ult_area_ocup),
+        'area_interes_texto': get_sinco_name(trabajador.area_interes),
+        
+        # Listas de Tags
+        'hard_skills_list': get_tag_names(trabajador.hard_skills, '2'),
+        'soft_skills_list': get_tag_names(trabajador.soft_skills, '3'),
+        'intereses_list': get_tag_names(trabajador.intereses, '1'),
+    }
+    
+    return render(request, 'perfil_trabajador.html', context)
 
 def mostrar_base(request):
     return render(request, 'base_trabajadores.html')

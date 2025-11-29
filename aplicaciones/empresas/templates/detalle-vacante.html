@@ -187,7 +187,7 @@
                         
                         <!-- Botones de Acción -->
                         <div class="col-md-4 text-end">
-                            <a href="#" class="btn btn-sm btn-outline-primary me-2" title="Ver perfil completo">
+                            <a href="{% url 'ver_perfil_candidato' post.id %}" class="btn btn-sm btn-outline-primary me-2" title="Ver perfil completo">
                                 <i class="bi bi-eye me-1"></i>Ver Perfil
                             </a>
                             <a href="mailto:{{ post.trabajador.usuario.email }}" class="btn btn-sm btn-primary" title="Enviar correo">
