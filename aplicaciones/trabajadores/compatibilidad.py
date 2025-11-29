@@ -5,7 +5,7 @@ from tensorflow.keras.models import load_model
 def evaluar_candidato(d_a_fit, n_s_fit, p_o_fit):
     print('cargando modelo de compatibilidad...')
     try:
-        modelo = load_model('.\\aplicaciones\\trabajadores\\static\\MLP\\compatibilidad_candidato.h5')
+        modelo = load_model('.\\aplicaciones\\trabajadores\\compatibilidad_candidato.h5')
     except OSError:
         return "Error: No se encuentra el archivo .h5"
 
