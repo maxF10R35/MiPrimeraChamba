@@ -325,7 +325,7 @@ def postularse(request, vacante_id):
         },
         
         # Datos procesados para mostrar info útil en el panel derecho
-        'nombre_area_sinco': "Tecnología (Ejemplo)", # Aquí deberías buscar el nombre real en SINCO usando vacante.area_ocupacion
+        'nombre_area_sinco': vacante.area_ocupacion, # Aquí deberías buscar el nombre real en SINCO usando vacante.area_ocupacion
         'requisitos_list': vacante.requisitos.split('|||') if vacante.requisitos else [],
         'prestaciones_list': vacante.prestaciones.split('|||') if vacante.prestaciones else [],
     }

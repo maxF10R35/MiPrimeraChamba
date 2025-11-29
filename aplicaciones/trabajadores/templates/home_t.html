@@ -92,72 +92,16 @@
 
 {% block content %}
 
+
     <!-- Barra de Búsqueda (Fuera del contenedor principal visualmente) -->
+
 </div> <!-- Cerramos container base temporalmente para el full-width -->
-<div class="search-header shadow-sm">
-    <div class="container">
-        <form action="" method="GET"> <!-- Formulario para futuro filtrado -->
-            <div class="row g-2">
-                <div class="col-md-5">
-                    <div class="input-group">
-                        <span class="input-group-text bg-white border-end-0"><i class="bi bi-search text-muted"></i></span>
-                        <input type="text" name="q" class="form-control border-start-0 ps-0" placeholder="Puesto, empresa o palabra clave...">
-                    </div>
-                </div>
-                <div class="col-md-5">
-                    <div class="input-group">
-                        <span class="input-group-text bg-white border-end-0"><i class="bi bi-geo-alt text-muted"></i></span>
-                        <input type="text" name="ubicacion" class="form-control border-start-0 ps-0" placeholder="Ciudad o Alcaldía">
-                    </div>
-                </div>
-                <div class="col-md-2 d-grid">
-                    <button type="submit" class="btn btn-primary fw-bold">Buscar</button>
-                </div>
-            </div>
-        </form>
-    </div>
-</div>
+
+
+
 <div class="container"> <!-- Reabrimos container -->
 
     <div class="row">
-        
-        <!-- Columna Izquierda: Filtros -->
-        <div class="col-lg-3 d-none d-lg-block">
-            <div class="filter-card shadow-sm">
-                <div class="d-flex justify-content-between align-items-center mb-3">
-                    <h6 class="fw-bold mb-0 text-dark">Filtros</h6>
-                    <a href="{% url 'home_t' %}" class="text-decoration-none small text-primary">Limpiar</a>
-                </div>
-                
-                <div class="mb-4">
-                    <label class="small text-muted fw-bold mb-2 text-uppercase">Tipo de Contrato</label>
-                    <div class="form-check">
-                        <input class="form-check-input" type="checkbox" id="tc">
-                        <label class="form-check-label small" for="tc">Tiempo Completo</label>
-                    </div>
-                    <div class="form-check">
-                        <input class="form-check-input" type="checkbox" id="mt">
-                        <label class="form-check-label small" for="mt">Medio Tiempo</label>
-                    </div>
-                    <div class="form-check">
-                        <input class="form-check-input" type="checkbox" id="prac">
-                        <label class="form-check-label small" for="prac">Prácticas</label>
-                    </div>
-                </div>
-
-                <div class="mb-2">
-                    <label class="small text-muted fw-bold mb-2 text-uppercase">Modalidad</label>
-                    <div class="form-check">
-                        <input class="form-check-input" type="checkbox" id="presencial">
-                        <label class="form-check-label small" for="presencial">Presencial</label>
-                    </div>
-                    <div class="form-check">
-                        <input class="form-check-input" type="checkbox" id="remoto">
-                        <label class="form-check-label small" for="remoto">Remoto / Home Office</label>
-                    </div>
-                </div>
-            </div>
-        </div>
 
         <!-- Columna Derecha: Feed de Vacantes -->
         <div class="col-lg-9">

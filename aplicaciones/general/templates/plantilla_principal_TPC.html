@@ -1,0 +1,519 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Tu Primera Chamba - Donde Comienza Tu Carrera</title>
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600;700;800&display=swap" rel="stylesheet">
+    <style>
+        /* Variables de Color (Rojo, Blanco, Negro) */
+        :root {
+            --primary-color: #DF3338; /* Rojo Vibrante como color principal */
+            --secondary-color: #333333; /* Negro para textos y elementos */
+            --background-light: #f8f8f8; /* Blanco roto para fondos ligeros */
+            --background-white: #ffffff; /* Blanco puro */
+            --text-dark: #333333;
+            --text-light: #ffffff;
+            --accent-color: #f7b731; /* Un toque de amarillo/dorado para destacar sutilmente */
+        }
+
+        /* Estilos Generales */
+        body {
+            font-family: 'Montserrat', sans-serif; /* Fuente moderna y legible */
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            background-color: var(--background-light);
+            color: var(--text-dark);
+            line-height: 1.6;
+            overflow-x: hidden; /* Previene el scroll horizontal */
+        }
+
+        /* Utilidades */
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0 20px;
+        }
+        .text-center { text-align: center; }
+        .section-title {
+            font-size: 3em; /* Más grande y llamativo */
+            font-weight: 800;
+            color: var(--primary-color);
+            margin-bottom: 15px;
+            text-transform: uppercase; /* Para un look más fuerte */
+        }
+        .section-subtitle {
+            font-size: 1.3em;
+            color: var(--secondary-color);
+            margin-bottom: 60px;
+            max-width: 700px;
+            margin-left: auto;
+            margin-right: auto;
+        }
+
+        /* Header (Pegajoso) */
+        header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 15px 50px;
+            background-color: var(--background-white);
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+            position: sticky;
+            top: 0;
+            z-index: 1000;
+        }
+        .logo-container { display: flex; align-items: center; }
+        .logo-container img { height: 50px; margin-right: 15px; } /* Ajuste de tamaño del logo */
+        .logo-container h1 {
+            font-size: 1.6em;
+            color: var(--secondary-color); /* Negro para el nombre de la marca */
+            font-weight: 700;
+            margin: 0;
+        }
+        .nav-buttons button {
+            background-color: var(--primary-color);
+            color: var(--text-light);
+            border: none;
+            padding: 12px 25px;
+            margin-left: 20px;
+            border-radius: 30px; /* Botones más redondeados */
+            cursor: pointer;
+            font-size: 1em;
+            font-weight: 600;
+            transition: background-color 0.3s ease, transform 0.2s ease, box-shadow 0.3s ease;
+            box-shadow: 0 6px 15px rgba(223, 51, 56, 0.2); /* Sombra que coincide con el rojo */
+        }
+        .nav-buttons button:hover {
+            background-color: #c92f34;
+            transform: translateY(-3px);
+            box-shadow: 0 8px 20px rgba(223, 51, 56, 0.3);
+        }
+
+        /* Sección Hero (Principal) */
+        .hero-section {
+            background: linear-gradient(135deg, var(--primary-color) 0%, #a8272c 100%); /* Degradado de rojo */
+            color: var(--text-light);
+            padding: 100px 0; /* Más espacio */
+            text-align: center;
+            margin-bottom: 60px;
+            clip-path: polygon(0 0, 100% 0, 100% 90%, 0% 100%); /* Forma geométrica atractiva */
+        }
+        .hero-section h2 {
+            font-size: 4.5em; /* Título principal muy grande */
+            font-weight: 800;
+            margin-bottom: 25px;
+            letter-spacing: -2px; /* Espaciado entre letras para un look moderno */
+        }
+        .hero-section p {
+            font-size: 1.6em;
+            font-weight: 400;
+            max-width: 900px;
+            margin: 0 auto 40px;
+            opacity: 0.9;
+        }
+        .hero-cta button {
+            background-color: var(--secondary-color); /* Botón principal en negro */
+            color: var(--text-light);
+            border: none;
+            padding: 18px 45px;
+            border-radius: 30px;
+            font-size: 1.2em;
+            font-weight: 700;
+            cursor: pointer;
+            transition: background-color 0.3s ease, box-shadow 0.3s ease, transform 0.2s ease;
+            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.3);
+            text-transform: uppercase;
+        }
+        .hero-cta button:hover {
+            background-color: #1a1a1a;
+            transform: translateY(-3px);
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.4);
+        }
+
+        /* Sección de Características */
+        .features-section {
+            padding: 70px 0;
+        }
+        .features-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 40px;
+            margin-top: 50px;
+        }
+        .feature-card {
+            background-color: var(--background-white);
+            padding: 35px;
+            border-radius: 15px;
+            box-shadow: 0 8px 30px rgba(0, 0, 0, 0.08);
+            text-align: center;
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+            border-top: 5px solid var(--primary-color); /* Borde superior rojo */
+        }
+        .feature-card:hover {
+            transform: translateY(-8px);
+            box-shadow: 0 12px 40px rgba(0, 0, 0, 0.12);
+        }
+        .feature-card .icon {
+            font-size: 3em;
+            color: var(--primary-color); /* Iconos en rojo */
+            margin-bottom: 20px;
+        }
+        .feature-card h3 {
+            font-size: 1.6em;
+            color: var(--secondary-color);
+            margin-bottom: 15px;
+            font-weight: 700;
+        }
+        .feature-card p {
+            font-size: 1.1em;
+            color: #555;
+        }
+
+        /* Sección de Precios */
+        .pricing-section {
+            padding: 80px 0;
+            background-color: var(--background-light); /* Fondo claro para los planes */
+        }
+        .pricing-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+            gap: 30px;
+            margin-top: 50px;
+        }
+        .price-card {
+            background-color: var(--background-white);
+            padding: 40px;
+            border-radius: 15px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+            text-align: center;
+            border: 1px solid #eee;
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+        }
+        .price-card:hover {
+            transform: translateY(-10px);
+            box-shadow: 0 15px 40px rgba(0, 0, 0, 0.15);
+        }
+        .price-card.featured {
+            border: 2px solid var(--primary-color); /* Borde rojo para el destacado */
+            box-shadow: 0 12px 35px rgba(223, 51, 56, 0.25);
+            transform: scale(1.03); /* Ligeramente más grande */
+        }
+        .price-card h3 {
+            font-size: 2em;
+            color: var(--secondary-color);
+            margin-bottom: 15px;
+            font-weight: 800;
+            text-transform: uppercase;
+        }
+        .price-card .price {
+            font-size: 4em; /* Precio muy grande */
+            font-weight: 800;
+            color: var(--primary-color);
+            margin-bottom: 10px;
+            line-height: 1;
+        }
+        .price-card .currency {
+            font-size: 0.5em; /* "MXN" más pequeño */
+            vertical-align: super;
+            font-weight: 600;
+        }
+        .price-card .term {
+            color: #888;
+            margin-bottom: 30px;
+            font-size: 1.1em;
+        }
+        .price-card ul {
+            list-style: none;
+            padding: 0;
+            margin-bottom: 40px;
+            text-align: left;
+        }
+        .price-card ul li {
+            padding: 12px 0;
+            border-bottom: 1px dashed #e0e0e0;
+            font-size: 1.1em;
+            color: #555;
+            display: flex;
+            align-items: center;
+        }
+        .price-card ul li:last-child { border-bottom: none; }
+        .price-card ul li svg {
+            margin-right: 10px;
+            color: var(--primary-color);
+        }
+
+        .price-card .buy-btn {
+            width: 100%;
+            background-color: var(--secondary-color); /* Botones de plan en negro */
+            color: var(--text-light);
+            border: none;
+            padding: 15px 25px;
+            border-radius: 30px;
+            cursor: pointer;
+            font-size: 1.1em;
+            font-weight: 700;
+            transition: background-color 0.3s ease, transform 0.2s ease, box-shadow 0.3s ease;
+            text-transform: uppercase;
+        }
+        .price-card .buy-btn:hover {
+            background-color: #1a1a1a;
+            transform: translateY(-3px);
+            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.2);
+        }
+
+        /* Footer y Alerta de Abuso */
+        footer {
+            background-color: var(--secondary-color); /* Footer en negro */
+            color: var(--background-white);
+            padding-top: 50px;
+        }
+        .footer-content {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            padding-bottom: 40px;
+        }
+        .footer-info h3 {
+            color: var(--primary-color); /* Título del footer en rojo */
+            font-size: 1.8em;
+            margin-bottom: 15px;
+        }
+        .footer-info p {
+            font-size: 0.95em;
+            margin: 8px 0;
+            max-width: 350px;
+            opacity: 0.8;
+        }
+        .abuse-report-section {
+            background-color: var(--primary-color); /* Fondo rojo para la alerta */
+            border: 2px solid #ffcccc; /* Borde más claro */
+            padding: 25px;
+            border-radius: 12px;
+            max-width: 450px;
+            box-shadow: 0 6px 20px rgba(0, 0, 0, 0.2);
+            color: var(--text-light); /* Texto blanco para el fondo rojo */
+        }
+        .abuse-report-section p {
+            font-size: 1em;
+            margin-bottom: 15px;
+            opacity: 0.9;
+        }
+        .abuse-report-section strong {
+            color: var(--accent-color); /* Resalta con el color dorado/amarillo */
+            font-weight: 700;
+        }
+        .abuse-report-section a {
+            display: inline-block;
+            background-color: var(--secondary-color); /* Botón de la alerta en negro */
+            color: var(--text-light);
+            padding: 10px 20px;
+            border-radius: 30px;
+            text-decoration: none;
+            font-weight: 600;
+            font-size: 1em;
+            transition: background-color 0.3s ease;
+        }
+        .abuse-report-section a:hover { background-color: #1a1a1a; }
+
+        .copyright {
+            text-align: center;
+            padding: 20px 0;
+            border-top: 1px solid rgba(255, 255, 255, 0.15);
+            font-size: 0.85em;
+            opacity: 0.7;
+        }
+
+        /* Iconos SVG (Marca de verificación para listas) */
+        .check-icon {
+            width: 20px;
+            height: 20px;
+            fill: none;
+            stroke: currentColor;
+            stroke-width: 2;
+            stroke-linecap: round;
+            stroke-linejoin: round;
+        }
+
+        /* Media Queries para Responsividad Móvil */
+        @media (max-width: 768px) {
+            header { padding: 15px 20px; flex-wrap: wrap; }
+            .logo-container { margin-bottom: 15px; width: 100%; justify-content: center; }
+            .nav-buttons { width: 100%; justify-content: center; display: flex; }
+            .nav-buttons button { margin: 0 10px; padding: 10px 20px; font-size: 0.9em; }
+
+            .hero-section { padding: 80px 0; clip-path: polygon(0 0, 100% 0, 100% 95%, 0% 100%); }
+            .hero-section h2 { font-size: 3em; }
+            .hero-section p { font-size: 1.3em; }
+
+            .section-title { font-size: 2.5em; }
+            .section-subtitle { font-size: 1.1em; margin-bottom: 40px; }
+
+            .features-grid, .pricing-grid { grid-template-columns: 1fr; }
+            .feature-card { border-top: none; border-left: 5px solid var(--primary-color); } /* Vertical en móvil */
+            .price-card.featured { transform: scale(1); } /* Quitar scale en móvil */
+
+            .footer-content { flex-direction: column; align-items: center; text-align: center; padding-bottom: 30px; }
+            .abuse-report-section { max-width: 100%; margin-top: 30px; }
+            .footer-info { margin-bottom: 25px; }
+        }
+        @media (max-width: 480px) {
+            .hero-section h2 { font-size: 2.2em; }
+            .hero-section p { font-size: 1em; }
+            .hero-cta button { padding: 15px 30px; font-size: 1em; }
+            .nav-buttons button { padding: 8px 12px; }
+        }
+
+    </style>
+</head>
+<body>
+
+    <header>
+        <div class="logo-container">
+            <!-- Tip Pro: Usa la etiqueta static para la imagen también -->
+            {% load static %}
+            <img src="{% static 'img/tu_primera_chamba_logo.png' %}" alt="Logo Tu Primera Chamba">
+            <h1>TU PRIMERA CHAMBA</h1>
+        </div>
+        <div class="nav-buttons">
+            <!-- Enlace al Registro de Candidatos -->
+            <button onclick="location.href='{% url 'registrar_trabajador' %}'">Candidato</button>
+            
+            <!-- Enlace al Registro de Empresas -->
+            <button onclick="location.href='{% url 'signup' %}'">Empresa</button>
+            
+            <!-- Opcional: Agregar botón de Login si ya tienen cuenta -->
+            <button onclick="location.href='{% url 'login' %}'" style="background-color: #333;">Entrar</button>
+        </div>
+    </header>
+
+    <main>
+        <!-- 1. Sección Hero / Llamada a la Acción --><section class="hero-section">
+            <div class="container">
+                <h2>Encuentra Tu Primera Chamba en la CDMX.</h2>
+                <p>Conectamos tu talento con las mejores microempresas, ofreciéndote oportunidades justas, inclusivas y eficientes para iniciar o impulsar tu carrera profesional.</p>
+                <div class="hero-cta">
+                    <button onclick="location.href='{% url 'registrar_trabajador' %}'">¡Regístrate Ahora!</button>
+                </div>
+            </div>
+        </section>
+
+        <!-- 2. Sección de Características Clave (Lo que nos hace especiales) --><section class="features-section">
+            <div class="container text-center">
+                <h2 class="section-title">¿Por Qué Elegirnos?</h2>
+                <p class="section-subtitle">Tecnología avanzada y un compromiso real con tu futuro laboral.</p>
+
+                <div class="features-grid">
+
+                    <!-- Característica 1: Automatización (AI / Red Neuronal 87% de Precisión) --><div class="feature-card">
+                        <span class="icon">
+                            <svg class="check-icon" viewBox="0 0 24 24">
+                                <path d="M9 3v2m6-2v2M9 19v2m6-2v2M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2zM9 9h6m-6 4h6m-6 4h6"></path>
+                            </svg>
+                        </span>
+                        <h3>Tecnología Inteligente</h3>
+                        <p>Nuestro avanzado Modelo de Red Neuronal garantiza precisión en la búsqueda, conectándote solo con las oportunidades más relevantes y adecuadas para tu perfil.</p>
+                    </div>
+
+                    <!-- Característica 2: Inclusión (Movilidad Limitada / LGBTQ+) --><div class="feature-card">
+                        <span class="icon">
+                            <svg class="check-icon" viewBox="0 0 24 24">
+                                <path d="M12 4.354a4 4 0 110 5.292M12 20.646l-2.484-2.484A12.001 12.001 0 0112 1.966v18.68"></path>
+                            </svg>
+                        </span>
+                        <h3>Un Espacio para Todos</h3>
+                        <p>Promovemos la diversidad con módulos exclusivos para personas con Movilidad Limitada y de la comunidad LGBTQ+, asegurando un acceso equitativo a empleos inclusivos y respetuosos.</p>
+                    </div>
+
+                    <!-- Característica 3: Seguridad (Cifrado RSA 256-bit) --><div class="feature-card">
+                        <span class="icon">
+                            <svg class="check-icon" viewBox="0 0 24 24">
+                                <path d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"></path>
+                            </svg>
+                        </span>
+                        <h3>Tu Privacidad es Primero</h3>
+                        <p>Protegemos tus datos con el robusto cifrado RSA y 256 bits en todas las transacciones. Tu información está segura con nosotros, ¡siempre!</p>
+                    </div>
+
+                </div>
+            </div>
+        </section>
+
+        <!-- 3. Sección de Precios --><section class="pricing-section">
+            <div class="container text-center">
+                <h2 class="section-title">Nuestros Planes para Empresas</h2>
+                <p class="section-subtitle">Encuentra el talento que necesitas. Sin complicaciones, con la mejor tecnología.</p>
+
+                <div class="pricing-grid">
+
+                    <!-- Plan 1: Micro Básico --><div class="price-card">
+                        <h3>Plan Micro Básico</h3>
+                        <div class="price">$299<span class="currency">MXN</span></div>
+                        <div class="term">/ mes</div>
+                        <ul>
+                            <li><svg class="check-icon" viewBox="0 0 24 24"><path d="M5 13l4 4L19 7"/></svg>Hasta 3 vacantes por mes</li>
+                            <li><svg class="check-icon" viewBox="0 0 24 24"><path d="M5 13l4 4L19 7"/></svg>Tarjetas de crédito virtuales</li>
+                            <li><svg class="check-icon" viewBox="0 0 24 24"><path d="M5 13l4 4L19 7"/></svg>Cifrado de 256-bit</li>
+                            <li><svg class="check-icon" viewBox="0 0 24 24"><path d="M5 13l4 4L19 7"/></svg>Soporte básico</li>
+                        </ul>
+                        <button class="buy-btn">Elegir Plan</button>
+                    </div>
+
+                    <!-- Plan 2: Pyme Pro (Destacado) --><div class="price-card featured">
+                        <h3>Plan Pyme Pro</h3>
+                        <div class="price">$899<span class="currency">MXN</span></div>
+                        <div class="term">/ mes</div>
+                        <ul>
+                            <li><svg class="check-icon" viewBox="0 0 24 24"><path d="M5 13l4 4L19 7"/></svg>Hasta 10 vacantes por mes</li>
+                            <li><svg class="check-icon" viewBox="0 0 24 24"><path d="M5 13l4 4L19 7"/></svg>Tarjetas de crédito virtuales</li>
+                            <li><svg class="check-icon" viewBox="0 0 24 24"><path d="M5 13l4 4L19 7"/></svg>Cifrado de 256-bit avanzado</li>
+                            <li><svg class="check-icon" viewBox="0 0 24 24"><path d="M5 13l4 4L19 7"/></svg>Modelo de Reclutamiento Personalizado</li>
+                            <li><svg class="check-icon" viewBox="0 0 24 24"><path d="M5 13l4 4L19 7"/></svg>Soporte técnico prioritario</li>
+                        </ul>
+                        <button class="buy-btn">Elegir Plan</button>
+                    </div>
+
+                    <!-- Plan 3: Big Empresarial --><div class="price-card">
+                        <h3>Plan Big Empresarial</h3>
+                        <div class="price">$1899<span class="currency">MXN</span></div>
+                        <div class="term">/ mes</div>
+                        <ul>
+                            <li><svg class="check-icon" viewBox="0 0 24 24"><path d="M5 13l4 4L19 7"/></svg>Hasta 20 vacantes por mes</li>
+                            <li><svg class="check-icon" viewBox="0 0 24 24"><path d="M5 13l4 4L19 7"/></svg>Tarjetas de crédito virtuales ilimitadas</li>
+                            <li><svg class="check-icon" viewBox="0 0 24 24"><path d="M5 13l4 4L19 7"/></svg>Cifrado de 256-bit premium</li>
+                            <li><svg class="check-icon" viewBox="0 0 24 24"><path d="M5 13l4 4L19 7"/></svg>Modelo de Reclutamiento Dedicado</li>
+                            <li><svg class="check-icon" viewBox="0 0 24 24"><path d="M5 13l4 4L19 7"/></svg>Acceso a reportes y analíticas avanzadas</li>
+                        </ul>
+                        <button class="buy-btn">Elegir Plan</button>
+                    </div>
+
+                </div>
+            </div>
+        </section>
+
+    </main>
+
+    <footer>
+        <div class="container">
+            <div class="footer-content">
+                <div class="footer-info">
+                    <h3>Tu Primera Chamba</h3>
+                    <p>La plataforma líder para conectar talento joven con microempresas en crecimiento en la CDMX.</p>
+                    <p>Nuestra misión: Fomentar un mercado laboral justo, accesible y eficiente para todos.</p>
+                </div>
+
+                <!-- Alerta de Abuso Laboral (Obligatoria) --><div class="abuse-report-section">
+                    <p><strong>¡ATENCIÓN! ¿Has sufrido abuso laboral?</strong></p>
+                    <p>Reporta cualquier situación de abuso o irregularidad laboral directamente con la Procuraduría de la Defensa del Trabajo de la CDMX.</p>
+                    <a href="https://www.trabajo.cdmx.gob.mx/procuraduria-de-la-defensa-del-trabajo-de-la-cdmx" target="_blank">IR A LA PROCURADURÍA</a>
+                </div>
+            </div>
+
+            <div class="copyright">
+                <p>&copy; 2024 Tu Primera Chamba. Todos los derechos reservados.</p>
+            </div>
+        </div>
+    </footer>
+</body>
+</html>

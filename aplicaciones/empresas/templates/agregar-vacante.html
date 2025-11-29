@@ -117,12 +117,14 @@
                         </div>
                     </div>
 
-                    <!-- SECCIÓN 3: Categorización SINCO -->
+                    <!-- SECCIÓN 3: Categorización SINCO y Nivel -->
                     <div class="form-section">
-                        <h4 class="section-title"><i class="bi bi-diagram-3 me-2"></i>Clasificación (SINCO)</h4>
-                        <div class="alert alert-info py-2 small">Selecciona paso a paso para categorizar correctamente el puesto.</div>
+                        <h4 class="section-title"><i class="bi bi-diagram-3 me-2"></i>Perfil y Clasificación</h4>
+                        <div class="alert alert-info py-2 small">Define el área industrial y el nivel requerido para el puesto.</div>
 
-                        <div class="row g-3">
+                        <!-- Parte 1: SINCO -->
+                        <h6 class="fw-bold text-muted mb-3 text-uppercase small">Área Industrial (SINCO)</h6>
+                        <div class="row g-3 mb-4">
                             <div class="col-md-4">
                                 <label class="form-label small text-muted">1. División</label>
                                 <select class="form-select" id="sinco_div">
@@ -136,13 +138,30 @@
                                 </select>
                             </div>
                             <div class="col-md-4">
-                                <label class="form-label fw-bold">3. Subgrupo (Final)</label>
+                                <label class="form-label fw-bold">3. Subgrupo (Final) <span class="text-danger">*</span></label>
                                 <select class="form-select border-primary" id="sinco_sub" disabled>
                                     <option value="" disabled selected>Esperando...</option>
                                 </select>
                             </div>
                         </div>
                         <input type="hidden" name="area_ocupacion" id="areaOcupacionFinal" required>
+
+                        <!-- Parte 2: Nivel Requerido (NUEVOS CAMPOS) -->
+                        <h6 class="fw-bold text-muted mb-3 text-uppercase small border-top pt-3">Nivel Requerido</h6>
+                        <div class="row g-3">
+                            <div class="col-md-6">
+                                <label class="form-label fw-bold">Escolaridad Mínima <span class="text-danger">*</span></label>
+                                <select class="form-select" name="escolaridad_minima" id="escolaridadSelect" required>
+                                    <option value="" disabled selected>Selecciona nivel...</option>
+                                </select>
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label fw-bold">Experiencia Requerida <span class="text-danger">*</span></label>
+                                <select class="form-select" name="tiempo_experiencia" id="experienciaSelect" required>
+                                    <option value="" disabled selected>Selecciona rango...</option>
+                                </select>
+                            </div>
+                        </div>
                     </div>
 
                     <!-- SECCIÓN 4: Etiquetas (VACANTE_TAGS) -->
@@ -169,19 +188,45 @@
     
     <script>
         // --- 1. DATOS DESDE DJANGO ---
-        // Descomenta esto en producción:
+        // Descomenta esto en producción y asegúrate de enviar 'estudios_json' y 'experiencia_json' desde tu views.py:
+        
         const SINCO = JSON.parse('{{ sinco_json|escapejs }}');
         const TAGS = JSON.parse('{{ tags_json|escapejs }}');
+        const ESTUDIOS = JSON.parse('{{ estudios_json|escapejs }}');
+        const EXPERIENCIA = JSON.parse('{{ experiencia_json|escapejs }}');
+        
+        
 
+        /*
         // MOCK DATA PARA PREVIEW (Eliminar en producción)
-        //const SINCO = {
-        //    '1': {'nombre': 'Funcionarios', 'grupos': {'11': {'nombre': 'Altas Autoridades', 'subgrupos': {'111': 'Legisladores', '112': 'Presidentes'}}}},
-        //    '2': {'nombre': 'Profesionistas', 'grupos': {'22': {'nombre': 'Ingenierías', 'subgrupos': {'226': 'Ing. Civil', '227': 'Sistemas Computacionales'}}}}
-        //};
-        //const TAGS = {
-        //    '1': {'nombre': 'Sector', 'etiquetas': {'11': {'nombre': 'Tecnología'}, '13': {'nombre': 'Finanzas'}}},
-        //    '3': {'nombre': 'Soft Skills', 'etiquetas': {'31': {'nombre': 'Proactividad'}, '36': {'nombre': 'Trabajo en equipo'}}}
-        //};
+        const SINCO = {
+            '1': {'nombre': 'Funcionarios', 'grupos': {'11': {'nombre': 'Altas Autoridades', 'subgrupos': {'111': 'Legisladores', '112': 'Presidentes'}}}},
+            '2': {'nombre': 'Profesionistas', 'grupos': {'22': {'nombre': 'Ingenierías', 'subgrupos': {'226': 'Ing. Civil', '227': 'Sistemas Computacionales'}}}}
+        };
+        const TAGS = {
+            '1': {'nombre': 'Sector', 'etiquetas': {'11': {'nombre': 'Tecnología'}, '13': {'nombre': 'Finanzas'}}},
+            '3': {'nombre': 'Soft Skills', 'etiquetas': {'31': {'nombre': 'Proactividad'}, '36': {'nombre': 'Trabajo en equipo'}}}
+        };
+        const ESTUDIOS = {
+            '10': 'Secundaria', '22': 'Bachillerato', '43': 'Licenciatura - Titulado', '61': 'Maestría'
+        };
+        const EXPERIENCIA = {
+            '0': 'Sin experiencia', '1': 'Menos de 6 meses', '2': '6 meses - 1 año', '5': '3 a 5 años'
+        };
+        */
+
+        // --- FUNCION GENERICA PARA LLENAR SELECTS ---
+        function populateSelect(id, data) {
+            const sel = document.getElementById(id);
+            for(const [k, v] of Object.entries(data)) {
+                sel.add(new Option(v, k));
+            }
+        }
+
+        // Inicializar Selects Nuevos
+        populateSelect('escolaridadSelect', ESTUDIOS);
+        populateSelect('experienciaSelect', EXPERIENCIA);
+
 
         // --- 2. LÓGICA DE LISTAS DINÁMICAS (Requisitos y Prestaciones) ---
         const lists = {
@@ -207,11 +252,9 @@
 
         function renderList(type) {
             const config = lists[type];
-            // Limpiar visualmente (manteniendo el input)
-            const inputEl = config.input; // Guardamos referencia
-            config.container.innerHTML = ''; // Borramos todo
+            const inputEl = config.input; 
+            config.container.innerHTML = ''; 
             
-            // Recrear items
             config.items.forEach((text, index) => {
                 const div = document.createElement('div');
                 div.className = 'dynamic-item';
@@ -219,14 +262,10 @@
                 config.container.appendChild(div);
             });
             
-            // Volver a poner el input al final
             config.container.appendChild(inputEl);
-            
-            // Actualizar input oculto (separado por comas)
-            config.hidden.value = config.items.join('|||'); // Usamos ||| para evitar bugs si el usuario usa comas
+            config.hidden.value = config.items.join('|||'); 
         }
 
-        // Event Listeners para Inputs (Enter key)
         ['req', 'pres'].forEach(type => {
             lists[type].input.addEventListener('keydown', (e) => {
                 if (e.key === 'Enter') {
@@ -243,7 +282,6 @@
         const sSub = document.getElementById('sinco_sub');
         const areaHidden = document.getElementById('areaOcupacionFinal');
 
-        // Llenar Divisiones
         for (const [k, v] of Object.entries(SINCO)) sDiv.add(new Option(`${k} - ${v.nombre}`, k));
 
         sDiv.addEventListener('change', function() {
@@ -276,13 +314,11 @@
         const selectedTags = new Set();
 
         for (const [catKey, catData] of Object.entries(TAGS)) {
-            // Título de Categoría
             const title = document.createElement('div');
             title.className = 'tag-category-title';
             title.textContent = catData.nombre;
             tagsWrapper.appendChild(title);
 
-            // Contenedor de botones
             const btnContainer = document.createElement('div');
             
             for (const [tagKey, tagData] of Object.entries(catData.etiquetas)) {
@@ -308,7 +344,7 @@
             tagsWrapper.appendChild(btnContainer);
         }
 
-        // --- 5. VALIDACIÓN FINAL ANTES DE ENVIAR ---
+        // --- 5. VALIDACIÓN FINAL ---
         document.getElementById('vacanteForm').addEventListener('submit', function(e) {
             if (lists.req.items.length === 0) {
                 alert("Debes agregar al menos un requisito.");

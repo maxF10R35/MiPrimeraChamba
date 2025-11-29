@@ -65,4 +65,4 @@ def logout_usuario(request):
 
 
 def pagina_inicio(request):
-    return render(request, 'pagina_inicio.html')
+    return render(request, 'plantilla_principal_TPC.html')

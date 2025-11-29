@@ -179,6 +179,8 @@ def agregar_vacante(request):
             vacante = Vacante.objects.create(
                 nombre_puesto=request.POST.get('nombre_puesto'),
                 area_ocupacion=request.POST.get('area_ocupacion'),
+                tiempo_experiencia=request.POST.get('tiempo_experiencia'),
+                escolaridad_minima=request.POST.get('escolaridad_minima'),
                 descripcion=request.POST.get('descripcion'),
                 requisitos=request.POST.get('requisitos'),
                 prestaciones=request.POST.get('prestaciones'),
@@ -202,7 +204,9 @@ def agregar_vacante(request):
     
     context = {
         'sinco_json': json.dumps(SINCO),
-        'tags_json': json.dumps(VACANTE_TAGS)
+        'tags_json': json.dumps(VACANTE_TAGS),
+        'estudios_json': json.dumps(NIVEL_ESTUDIOS),
+        'experiencia_json': json.dumps(TIEMPO_EXPERIENCIA)
     }
     return render(request, 'agregar-vacante.html', context)
 
