@@ -44,7 +44,7 @@ def login_usuario(request):
                     return redirect('home') # Dashboard Empresa
                 
                 elif hasattr(user, 'trabajador'):
-                    messages.success(request, f'¡Bienvenido, {user.first_name}!')
+                    messages.success(request, f'¡Bienvenido, {user.trabajador.nombre}!')
                     return redirect('home_t') # Dashboard Trabajador
                 
                 else:

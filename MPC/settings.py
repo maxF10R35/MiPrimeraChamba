@@ -9,7 +9,7 @@ https://docs.djangoproject.com/en/5.2/topics/settings/
 For the full list of settings and their values, see
 https://docs.djangoproject.com/en/5.2/ref/settings/
 """
-
+import mongoengine
 from pathlib import Path
 import os
 from decouple import config
@@ -102,6 +102,15 @@ DATABASES = {
         conn_max_age=600
     )
 }
+
+# Connect to MongoDB using mongoengine
+_MONGO_URI = "mongodb+srv://demianflores430_db_user:es9BnT1s5Lkvjv1T@maxdb.nq1rybb.mongodb.net/?appName=MaxDB"
+#MONGO_USER = config('MONGO_USER')
+
+mongoengine.connect(
+    db='tu_primera_chamba_db', 
+    host=_MONGO_URI
+)
 
 # Password validation
 # https://docs.djangoproject.com/en/5.2/ref/settings/#auth-password-validators
