@@ -12,6 +12,7 @@ https://docs.djangoproject.com/en/5.2/ref/settings/
 
 from pathlib import Path
 import os
+from decouple import config
 
 # Import dj-database-url at the beginning of the file.
 import dj_database_url 
@@ -190,3 +191,5 @@ LOGGING = {
         },
     },
 }
+
+CLAVE_ENCRIPTACION = config('CLAVE_ENCRIPTACION', default='').encode('utf-8')
