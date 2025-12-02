@@ -104,7 +104,7 @@ DATABASES = {
 }
 
 # Connect to MongoDB using mongoengine
-_MONGO_URI = "mongodb+srv://demianflores430_db_user:es9BnT1s5Lkvjv1T@maxdb.nq1rybb.mongodb.net/?appName=MaxDB"
+_MONGO_URI = config('MONGO_DB')
 #MONGO_USER = config('MONGO_USER')
 
 mongoengine.connect(
