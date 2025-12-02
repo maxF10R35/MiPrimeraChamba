@@ -472,7 +472,6 @@ SINCO = {
     }
 }
 
-
 # Diccionario de Clasificación de Vacantes y Perfiles
 # Estructura: 'Clave Mayor': {'nombre': 'Categoría', 'etiquetas': {'Clave Menor': {'nombre': 'Etiqueta', 'descripcion': '...'}}}
 
@@ -524,6 +523,14 @@ VACANTE_TAGS = {
             '111': {
                 'nombre': 'Administración y Oficina',
                 'descripcion': 'Asistente administrativo, secretaria, recepción, gestión de documentos.'
+            },
+            '112': {
+                'nombre': 'Alimentos y Bebidas',
+                'descripcion': 'Restaurantes, bares, catering, producción de alimentos.'
+            },
+            '113': {
+                'nombre': 'Gobierno y Sector Público',
+                'descripcion': 'Administración pública, servicios sociales, políticas públicas.'
             }
         }
     },
@@ -555,6 +562,26 @@ VACANTE_TAGS = {
             '26': {
                 'nombre': 'Legal',
                 'descripcion': 'Abogacía, derecho corporativo, cumplimiento (compliance).'
+            },
+            '27': {
+                'nombre': 'Preparación y Cocina',
+                'descripcion': 'Chef, cocinero, ayudante de cocina, panadero.'
+            },
+            '28': {
+                'nombre': 'Mantenimiento y Operaciones',
+                'descripcion': 'Técnico de mantenimiento, operaciones, limpieza, seguridad.'
+            },
+            '29': {
+                'nombre': 'Delivery y Mensajería',
+                'descripcion': 'Repartidor, mensajero, conductor.'
+            },
+            '200': {
+                'nombre': 'Educación y Capacitación',
+                'descripcion': 'Profesor, instructor, capacitador.'
+            },
+            '201': {
+                'nombre': 'Construcción y Obras',
+                'descripcion': 'Albañil, electricista, plomero, carpintero.'
             }
         }
     },
